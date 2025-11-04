@@ -9,6 +9,7 @@
  * - 1:1 정사각형 썸네일
  * - Hover 시 좋아요/댓글 수 표시
  * - 클릭 시 게시물 상세 페이지 이동
+ * - 게시물/릴스/태그된 게시물 탭 메뉴
  *
  * @dependencies
  * - react: useState, useEffect
@@ -20,7 +21,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, Grid3x3, Film, Bookmark } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PostGridProps {
   userId: string;
@@ -33,10 +35,13 @@ interface Post {
   comments_count: number;
 }
 
+type TabType = "posts" | "reels" | "tagged";
+
 export function PostGrid({ userId }: PostGridProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>("posts");
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -86,9 +91,46 @@ export function PostGrid({ userId }: PostGridProps) {
     );
   }
 
+  const tabs = [
+    { id: "posts" as TabType, label: "게시물", icon: Grid3x3 },
+    { id: "reels" as TabType, label: "릴스", icon: Film },
+    { id: "tagged" as TabType, label: "태그됨", icon: Bookmark },
+  ];
+
   return (
-    <div className="w-full py-8">
-      <div className="grid grid-cols-3 gap-1 md:gap-4">
+    <div className="w-full">
+      {/* 탭 메뉴 */}
+      <div className="border-t border-[#dbdbdb]">
+        <div className="flex justify-center gap-16">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex items-center gap-2 py-4 border-t-2 transition-colors",
+                  isActive
+                    ? "border-[#262626] text-[#262626]"
+                    : "border-transparent text-[#8e8e8e] hover:text-[#262626]"
+                )}
+              >
+                <Icon className={cn("w-5 h-5", isActive ? "fill-current" : "")} />
+                <span className="text-xs font-semibold uppercase tracking-wider">
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 게시물 그리드 */}
+      <div className="py-8">
+        {activeTab === "posts" && (
+          <div className="grid grid-cols-3 gap-1 md:gap-4">
         {posts.map((post) => (
           <Link
             key={post.id}
@@ -124,6 +166,22 @@ export function PostGrid({ userId }: PostGridProps) {
             )}
           </Link>
         ))}
+        </div>
+        )}
+
+        {/* 릴스 탭 (향후 구현) */}
+        {activeTab === "reels" && (
+          <div className="py-12 text-center">
+            <p className="text-[#8e8e8e]">릴스 기능은 곧 추가될 예정입니다.</p>
+          </div>
+        )}
+
+        {/* 태그된 게시물 탭 (향후 구현) */}
+        {activeTab === "tagged" && (
+          <div className="py-12 text-center">
+            <p className="text-[#8e8e8e]">태그된 게시물 기능은 곧 추가될 예정입니다.</p>
+          </div>
+        )}
       </div>
     </div>
   );

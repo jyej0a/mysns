@@ -108,9 +108,9 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 특정 사용자 필터링 (userId 쿼리 파라미터)
 - [x] 게시물 상세 페이지 라우트 생성 (`app/(main)/post/[postId]/page.tsx`)
   - [x] 기본 라우트 구조 생성
-  - [ ] Desktop: 모달로 표시 (추후 구현)
-  - [ ] Mobile: 전체 페이지로 표시 (추후 구현)
-  - [ ] 게시물 상세 정보 표시 (추후 구현)
+  - [ ] Desktop: 모달로 표시 (1-5에서 구현 예정)
+  - [ ] Mobile: 전체 페이지로 표시 (2-4에서 구현 예정)
+  - [ ] 게시물 상세 정보 표시 (2-4에서 구현 예정)
 
 #### 1-4. 홈 피드 - 좋아요 기능 ✅
 - [x] 좋아요 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
@@ -128,56 +128,90 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 에러 처리 및 롤백
   - [x] 로딩 상태 관리
 
+#### 1-5. PC 버전 - 게시물 상세 모달 ✅
+- [x] PostModal 컴포넌트 생성 (`components/post/PostModal.tsx`)
+  - [x] Dialog 기반 (shadcn/ui)
+  - [x] 레이아웃: 이미지(50%) + 댓글 영역(50%) 나란히 배치
+  - [x] 이미지 영역: 정사각형 이미지 표시 (object-contain)
+  - [x] 댓글 영역: 헤더(사용자 정보) + 댓글 목록(스크롤) + 액션 버튼 + 댓글 입력창(임시 disabled)
+  - [x] 닫기 버튼 (커스텀 스타일)
+  - [x] PostModalProvider로 모달 상태 관리
+- [x] PostCard Desktop 클릭 시 모달 열기
+  - [x] 모바일: 기존대로 페이지 이동
+  - [x] Desktop: 모달 열기 (버튼 클릭)
+- [x] 게시물 상세 데이터 로딩
+  - [x] `/api/posts/[postId]` GET API 생성
+  - [x] 게시물 정보, 댓글 목록, 좋아요 상태 포함
+- [x] 모달 내부 좋아요 기능
+  - [x] PostCard와 동일한 좋아요 로직 적용
+  - [x] Optimistic update 및 에러 핸들링
+
 ---
 
 ### 2. 게시물 작성 & 댓글 기능
 
-#### 2-1. 게시물 작성 모달
-- [ ] CreatePostModal 컴포넌트 생성 (`components/post/CreatePostModal.tsx`)
-  - [ ] Dialog 기반 (shadcn/ui)
-  - [ ] 이미지 미리보기 UI
-  - [ ] 이미지 업로드 버튼
-  - [ ] 캡션 입력 필드 (최대 2,200자)
-  - [ ] "게시" 버튼
+#### 2-1. 게시물 작성 모달 ✅
+- [x] CreatePostModal 컴포넌트 생성 (`components/post/CreatePostModal.tsx`)
+  - [x] Dialog 기반 (shadcn/ui)
+  - [x] 이미지 미리보기 UI
+  - [x] 이미지 업로드 버튼
+  - [x] 캡션 입력 필드 (최대 2,200자)
+  - [x] "게시" 버튼
+  - [x] 드래그 앤 드롭 기능 추가
+  - [x] 모달 닫힘 시 상태 초기화 개선
 
-#### 2-2. 게시물 작성 - 이미지 업로드
-- [ ] Supabase Storage 버킷 생성 (Supabase Dashboard)
-  - [ ] 버킷명: `posts` (또는 `uploads`)
-  - [ ] RLS 정책 설정 (인증된 사용자만 업로드)
-- [ ] `/api/posts` POST API 생성 (`app/api/posts/route.ts`)
-  - [ ] 이미지 파일 업로드 (Supabase Storage)
-  - [ ] 파일 검증 (최대 5MB, 이미지 형식만)
-  - [ ] 게시물 데이터 저장 (posts 테이블)
-  - [ ] 성공 시 피드 리프레시
+#### 2-2. 게시물 작성 - 이미지 업로드 ✅
+- [x] Supabase Storage 버킷 생성 확인
+  - [x] 버킷명: `uploads` (마이그레이션으로 생성됨: `supabase/migrations/setup_storage.sql`)
+  - [x] RLS 정책 설정 (인증된 사용자만 업로드)
+- [x] `/api/posts` POST API 생성 (`app/api/posts/route.ts`)
+  - [x] 이미지 파일 업로드 (Supabase Storage)
+  - [x] 파일 검증 (최대 5MB, 이미지 형식만)
+  - [x] 게시물 데이터 저장 (posts 테이블)
+  - [x] 성공 시 피드 리프레시 (페이지 새로고침)
+- [x] CreatePostModal에서 실제 API 호출 구현
+  - [x] FormData로 이미지 및 캡션 전송
+  - [x] 에러 처리 및 사용자 피드백
 
-#### 2-3. 댓글 기능 - UI & 작성
-- [ ] 댓글 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
-- [ ] CommentList 컴포넌트 생성 (`components/comment/CommentList.tsx`)
-  - [ ] 댓글 목록 표시
-  - [ ] 사용자 정보 포함
-  - [ ] 시간 표시
-- [ ] CommentForm 컴포넌트 생성 (`components/comment/CommentForm.tsx`)
-  - [ ] 입력창: "댓글 달기..."
-  - [ ] Enter 또는 "게시" 버튼으로 제출
-- [ ] `/api/comments` POST API 생성 (`app/api/comments/route.ts`)
-  - [ ] 댓글 작성
-  - [ ] 게시물 ID, 사용자 ID 포함
+#### 2-3. 댓글 기능 - UI & 작성 ✅
+- [x] 댓글 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
+- [x] CommentList 컴포넌트 생성 (`components/comment/CommentList.tsx`)
+  - [x] 댓글 목록 표시
+  - [x] 사용자 정보 포함
+  - [x] 시간 표시
+- [x] CommentForm 컴포넌트 생성 (`components/comment/CommentForm.tsx`)
+  - [x] 입력창: "댓글 달기..."
+  - [x] Enter 또는 "게시" 버튼으로 제출
+- [x] `/api/comments` POST API 생성 (`app/api/comments/route.ts`)
+  - [x] 댓글 작성
+  - [x] 게시물 ID, 사용자 ID 포함
+  - [x] 입력 검증 (내용 필수, 최대 1000자)
+- [x] PostModal에 CommentList와 CommentForm 통합
+  - [x] 댓글 작성 후 목록 자동 새로고침
 
-#### 2-4. 댓글 기능 - 삭제 & 무한스크롤
-- [ ] `/api/comments` DELETE API 생성 (`app/api/comments/[commentId]/route.ts`)
-  - [ ] 댓글 삭제 (본인만 가능)
-- [ ] 댓글 삭제 버튼 추가 (`CommentList` 내부)
-  - [ ] 본인 댓글에만 ⋯ 메뉴 표시
-  - [ ] 삭제 확인 다이얼로그
-- [ ] PostFeed 무한 스크롤 구현
-  - [ ] Intersection Observer 사용
-  - [ ] 하단 도달 시 다음 10개 로드
-  - [ ] 로딩 상태 표시
-- [ ] 게시물 상세 페이지 구현 (`app/(main)/post/[postId]/page.tsx`)
-  - [ ] PostModal 컴포넌트 생성 (Desktop용)
-  - [ ] 게시물 상세 페이지 (Mobile용)
-  - [ ] 전체 댓글 목록 표시
-  - [ ] 댓글 작성 기능
+#### 2-4. 댓글 기능 - 삭제 & 무한스크롤 ✅
+- [x] `/api/comments` DELETE API 생성 (`app/api/comments/[commentId]/route.ts`)
+  - [x] 댓글 삭제 (본인만 가능)
+  - [x] 권한 검증 (본인 댓글인지 확인)
+- [x] 댓글 삭제 버튼 추가 (`CommentList` 내부)
+  - [x] 본인 댓글에만 ⋯ 메뉴 표시 (hover 시)
+  - [x] 삭제 확인 다이얼로그 (Dialog 컴포넌트 사용)
+- [x] PostModal에서 현재 사용자 ID 가져오기
+  - [x] `/api/posts/[postId]` API에서 currentUserId 반환
+  - [x] PostModal에서 currentUserId 상태 관리 및 CommentList에 전달
+  - [x] 댓글 삭제 핸들러 구현
+- [x] PostFeed 무한 스크롤 구현
+  - [x] Intersection Observer 사용
+  - [x] 하단 도달 시 다음 10개 로드
+  - [x] 로딩 상태 표시 (PostCardSkeleton)
+  - [x] hasMore 상태 관리
+- [x] 게시물 상세 페이지 구현 (`app/(main)/post/[postId]/page.tsx`)
+  - [x] Mobile: 전체 페이지로 표시 (모바일 헤더 포함)
+  - [x] Desktop: PostModal 컴포넌트 사용 (1-5에서 구현)
+  - [x] 전체 댓글 목록 표시 (CommentList 사용)
+  - [x] 댓글 작성 기능 (CommentForm 사용)
+  - [x] 좋아요 기능 (PostCard와 동일한 로직)
+  - [x] 댓글 삭제 기능
 
 ---
 
@@ -269,9 +303,14 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 
 ### Storage 버킷 설정
 1. Supabase Dashboard → Storage
-2. "New bucket" 클릭
-3. 버킷명: `posts` (또는 `uploads`)
-4. Public/Private 선택 (RLS 정책 설정)
+2. "New bucket" 클릭 또는 기존 버킷 확인
+3. 버킷명: `uploads` (마이그레이션으로 생성됨: `supabase/migrations/setup_storage.sql`)
+4. **중요**: 게시물 이미지를 공개적으로 보여주려면 다음 중 하나를 선택:
+   - 옵션 1: 버킷을 Public으로 설정 (Supabase Dashboard에서 변경)
+   - 옵션 2: SELECT 정책을 수정하여 모든 사용자가 `*/posts/*` 경로의 파일을 볼 수 있도록 설정
+   - 옵션 3: 별도의 `posts` public 버킷 생성
+
+**참고**: 현재 `setup_storage.sql`의 RLS 정책은 인증된 사용자만 자신의 파일을 볼 수 있도록 설정되어 있습니다. 게시물 이미지를 공개하려면 추가 설정이 필요합니다.
 
 ### 개발 우선순위
 1. **레이아웃 구조** → 사용자 경험의 기반

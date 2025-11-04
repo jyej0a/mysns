@@ -32,6 +32,16 @@ USING (
   (storage.foldername(name))[1] = (SELECT auth.jwt()->>'sub')
 );
 
+-- SELECT: 게시물 이미지는 모든 사용자가 조회 가능 (공개 접근)
+-- 경로가 {clerk_id}/posts/* 인 경우 공개 접근 허용
+CREATE POLICY "Public can view post images"
+ON storage.objects FOR SELECT
+TO public
+USING (
+  bucket_id = 'uploads' AND
+  (storage.foldername(name))[2] = 'posts'
+);
+
 -- DELETE: 인증된 사용자만 자신의 파일 삭제 가능
 CREATE POLICY "Users can delete own files"
 ON storage.objects FOR DELETE

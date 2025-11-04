@@ -18,7 +18,7 @@
  * - lucide-react: ImageIcon, X
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +46,7 @@ export function CreatePostModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 현재 사용자 이름 가져오기
@@ -55,11 +56,8 @@ export function CreatePostModal({
     user?.emailAddresses[0]?.emailAddress ||
     "사용자";
 
-  // 이미지 선택 핸들러
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  // 파일 검증 및 처리 공통 함수
+  const processFile = useCallback((file: File) => {
     // 이미지 파일 검증
     if (!file.type.startsWith("image/")) {
       alert("이미지 파일만 업로드할 수 있습니다.");
@@ -80,6 +78,36 @@ export function CreatePostModal({
       setImagePreview(reader.result as string);
     };
     reader.readAsDataURL(file);
+  }, []);
+
+  // 이미지 선택 핸들러
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processFile(file);
+  };
+
+  // 드래그 앤 드롭 핸들러
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    processFile(file);
   };
 
   // 이미지 제거 핸들러
@@ -91,7 +119,7 @@ export function CreatePostModal({
     }
   };
 
-  // 게시 핸들러 (2-2에서 실제 업로드 로직 구현 예정)
+  // 게시 핸들러
   const handleSubmit = async () => {
     if (!selectedImage) {
       alert("이미지를 선택해주세요.");
@@ -101,39 +129,65 @@ export function CreatePostModal({
     setIsSubmitting(true);
 
     try {
-      // TODO: 2-2에서 실제 업로드 로직 구현
-      // 현재는 콘솔에만 출력
-      console.log("게시물 작성:", {
-        image: selectedImage,
-        caption,
+      // FormData 생성
+      const formData = new FormData();
+      formData.append("image", selectedImage);
+      if (caption.trim()) {
+        formData.append("caption", caption.trim());
+      }
+
+      // API 호출
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        body: formData,
       });
 
-      // 임시로 성공 처리
-      alert("게시물 작성 기능은 2-2 단계에서 구현됩니다.");
-      
-      // 모달 닫기 및 상태 초기화
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "게시물 작성에 실패했습니다.");
+      }
+
+      // 성공 시 모달 닫기 및 상태 초기화
       handleClose();
+      onOpenChange(false);
+
+      // 페이지 새로고침하여 새 게시물 표시
+      window.location.reload();
     } catch (error) {
       console.error("게시물 작성 오류:", error);
-      alert("게시물 작성에 실패했습니다.");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "게시물 작성에 실패했습니다.";
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // 모달 닫기 및 상태 초기화
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setSelectedImage(null);
     setImagePreview(null);
     setCaption("");
+    setIsDragging(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    onOpenChange(false);
+  }, []);
+
+  // 모달 상태 변경 핸들러
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      // 모달이 닫힐 때 상태 초기화
+      handleClose();
+    }
+    onOpenChange(newOpen);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-[600px] p-0 gap-0">
         <DialogHeader className="px-4 py-3 border-b border-[#dbdbdb]">
           <DialogTitle className="text-center text-base font-semibold text-[#262626]">
@@ -144,7 +198,15 @@ export function CreatePostModal({
         <div className="flex flex-col">
           {/* 이미지 선택/미리보기 영역 */}
           {!imagePreview ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4 min-h-[400px]">
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={cn(
+                "flex flex-col items-center justify-center py-12 px-4 min-h-[400px] transition-colors",
+                isDragging && "bg-blue-50 border-2 border-dashed border-[#0095f6]"
+              )}
+            >
               <ImageIcon className="w-12 h-12 text-[#8e8e8e] mb-4" />
               <p className="text-xl text-[#262626] font-light mb-4">
                 사진을 여기에 끌어다 놓으세요

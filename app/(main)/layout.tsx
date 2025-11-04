@@ -26,7 +26,7 @@ export default function MainLayout({
 }) {
   return (
     <CreatePostProvider>
-      <div className="min-h-screen bg-[#fafafa]">
+        <div className="min-h-screen bg-[#fafafa]">
         {/* Sidebar (Desktop & Tablet) */}
         <Sidebar />
 

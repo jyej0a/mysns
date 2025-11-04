@@ -24,6 +24,7 @@ import Image from "next/image";
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { usePostModal } from "@/components/providers/post-modal-provider";
 
 interface PostCardProps {
   post: {
@@ -52,6 +53,7 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const { isSignedIn } = useAuth();
+  const { openModal } = usePostModal();
   
   // 좋아요 상태 관리 (optimistic update)
   const [isLiked, setIsLiked] = useState(post.is_liked || false);
@@ -229,7 +231,11 @@ export function PostCard({ post }: PostCardProps) {
             sizes="(max-width: 768px) 100vw, 630px"
           />
         </div>
-        <Link href={`/post/${post.id}`} className="hidden md:block relative w-full h-full">
+        {/* Desktop: 모달 열기 */}
+        <button
+          onClick={() => openModal(post.id)}
+          className="hidden md:block relative w-full h-full cursor-pointer"
+        >
           <Image
             src={post.image_url}
             alt={post.caption || "게시물 이미지"}
@@ -237,7 +243,7 @@ export function PostCard({ post }: PostCardProps) {
             className="object-cover"
             sizes="630px"
           />
-        </Link>
+        </button>
       </div>
 
       {/* 액션 버튼 (48px) */}
