@@ -14,11 +14,15 @@
  * - lucide-react: 아이콘
  * - next/link: 라우팅
  * - next/image: 이미지 최적화
+ * - react: useState, useCallback, useRef
+ * - @clerk/nextjs: useAuth (인증 확인용)
  */
 
+import { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 interface PostCardProps {
@@ -47,6 +51,18 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
+  const { isSignedIn } = useAuth();
+  
+  // 좋아요 상태 관리 (optimistic update)
+  const [isLiked, setIsLiked] = useState(post.is_liked || false);
+  const [likesCount, setLikesCount] = useState(post.likes_count || 0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // 더블탭 감지를 위한 타이머
+  const tapTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -65,6 +81,90 @@ export function PostCard({ post }: PostCardProps) {
     if (num < 1000000) return `${(num / 1000).toFixed(1)}천`;
     return `${(num / 1000000).toFixed(1)}만`;
   };
+
+  // 좋아요 토글 핸들러
+  const handleLikeToggle = useCallback(async () => {
+    if (!isSignedIn || isLoading) return;
+
+    // Optimistic update
+    const previousIsLiked = isLiked;
+    const previousLikesCount = likesCount;
+    
+    setIsLiked(!isLiked);
+    setLikesCount((prev) => (isLiked ? Math.max(0, prev - 1) : prev + 1));
+    setIsAnimating(true);
+    setIsLoading(true);
+
+    // 애니메이션 완료 대기
+    setTimeout(() => setIsAnimating(false), 150);
+
+    try {
+      if (isLiked) {
+        // 좋아요 취소
+        const response = await fetch(`/api/likes?postId=${post.id}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to unlike");
+        }
+      } else {
+        // 좋아요 추가
+        const response = await fetch("/api/likes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ postId: post.id }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          // 중복 좋아요는 이미 좋아요 상태이므로 성공으로 처리
+          if (response.status === 409 && error.error === "Already liked") {
+            // 이미 좋아요 상태이므로 롤백 불필요
+            return;
+          }
+          throw new Error("Failed to like");
+        }
+      }
+    } catch (error) {
+      // 실패 시 롤백
+      setIsLiked(previousIsLiked);
+      setLikesCount(previousLikesCount);
+      console.error("Like toggle error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLiked, likesCount, post.id, isSignedIn, isLoading]);
+
+  // 더블탭 좋아요 핸들러 (모바일)
+  const handleDoubleTap = useCallback(() => {
+    if (!isSignedIn || isLoading) return;
+
+    // 단일 탭과 더블탭 구분을 위한 지연 처리
+    if (tapTimerRef.current) {
+      // 더블탭 감지
+      clearTimeout(tapTimerRef.current);
+      tapTimerRef.current = null;
+      
+      // 좋아요 상태가 아니면 좋아요 추가
+      if (!isLiked) {
+        setShowDoubleTapHeart(true);
+        handleLikeToggle();
+        
+        // 1초 후 큰 하트 사라짐
+        setTimeout(() => {
+          setShowDoubleTapHeart(false);
+        }, 1000);
+      }
+    } else {
+      // 첫 번째 탭 - 300ms 후 단일 탭으로 처리
+      tapTimerRef.current = setTimeout(() => {
+        tapTimerRef.current = null;
+      }, 300);
+    }
+  }, [isLiked, isSignedIn, isLoading, handleLikeToggle]);
 
   return (
     <article className="bg-white border border-[#dbdbdb] rounded-lg mb-4">
@@ -95,8 +195,32 @@ export function PostCard({ post }: PostCardProps) {
       </header>
 
       {/* 이미지 영역 (1:1 정사각형) */}
-      <div className="relative w-full aspect-square bg-gray-100">
-        <Link href={`/post/${post.id}`} className="md:hidden">
+      <div 
+        className="relative w-full aspect-square bg-gray-100"
+        onDoubleClick={handleDoubleTap}
+      >
+        {/* 더블탭 큰 하트 애니메이션 (모바일) */}
+        {showDoubleTapHeart && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+            <Heart
+              className={cn(
+                "w-24 h-24 text-[#ed4956] fill-[#ed4956]",
+                "animate-[heartPulse_1s_ease-out]"
+              )}
+            />
+          </div>
+        )}
+        
+        {/* 모바일: 더블탭을 위해 Link를 제거하고 클릭 핸들러 추가 */}
+        <div
+          className="md:hidden relative w-full h-full cursor-pointer"
+          onClick={() => {
+            // 더블탭이 아닌 경우에만 페이지 이동
+            if (!showDoubleTapHeart) {
+              window.location.href = `/post/${post.id}`;
+            }
+          }}
+        >
           <Image
             src={post.image_url}
             alt={post.caption || "게시물 이미지"}
@@ -104,8 +228,8 @@ export function PostCard({ post }: PostCardProps) {
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 630px"
           />
-        </Link>
-        <div className="hidden md:block">
+        </div>
+        <Link href={`/post/${post.id}`} className="hidden md:block relative w-full h-full">
           <Image
             src={post.image_url}
             alt={post.caption || "게시물 이미지"}
@@ -113,17 +237,27 @@ export function PostCard({ post }: PostCardProps) {
             className="object-cover"
             sizes="630px"
           />
-        </div>
+        </Link>
       </div>
 
       {/* 액션 버튼 (48px) */}
       <div className="h-12 flex items-center justify-between px-4 border-b border-[#dbdbdb]">
         <div className="flex items-center gap-4">
-          <button className="text-[#262626] hover:opacity-70 transition-opacity">
+          <button
+            onClick={handleLikeToggle}
+            disabled={!isSignedIn || isLoading}
+            className={cn(
+              "transition-opacity",
+              !isSignedIn && "cursor-not-allowed opacity-50",
+              isLoading && "cursor-wait",
+              isSignedIn && !isLoading && "hover:opacity-70"
+            )}
+          >
             <Heart
               className={cn(
-                "w-6 h-6",
-                post.is_liked ? "fill-[#ed4956] text-[#ed4956]" : ""
+                "w-6 h-6 transition-transform duration-150",
+                isLiked ? "fill-[#ed4956] text-[#ed4956]" : "text-[#262626]",
+                isAnimating && "scale-[1.3]"
               )}
             />
           </button>
@@ -145,9 +279,9 @@ export function PostCard({ post }: PostCardProps) {
       {/* 컨텐츠 */}
       <div className="px-4 py-2 space-y-2">
         {/* 좋아요 수 */}
-        {post.likes_count !== undefined && post.likes_count > 0 && (
+        {likesCount > 0 && (
           <p className="text-sm font-semibold text-[#262626]">
-            좋아요 {formatNumber(post.likes_count)}개
+            좋아요 {formatNumber(likesCount)}개
           </p>
         )}
 

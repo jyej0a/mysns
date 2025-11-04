@@ -11,6 +11,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClerkSupabaseClient } from "@/lib/supabase/server";
+import { auth } from "@clerk/nextjs/server";
+import { getServiceRoleClient } from "@/lib/supabase/service-role";
 
 export async function GET(request: NextRequest) {
   try {
@@ -55,6 +57,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // 현재 사용자 정보 가져오기 (좋아요 상태 확인용)
+    const { userId: clerkUserId } = await auth();
+    let currentUserId: string | null = null;
+
+    if (clerkUserId) {
+      const serviceRoleSupabase = getServiceRoleClient();
+      const { data: userData } = await serviceRoleSupabase
+        .from("users")
+        .select("id")
+        .eq("clerk_id", clerkUserId)
+        .single();
+
+      if (userData) {
+        currentUserId = userData.id;
+      }
+    }
+
     // 좋아요 정보와 댓글 미리보기 가져오기
     const postsWithDetails = await Promise.all(
       (posts || []).map(async (post: any) => {
@@ -87,9 +106,17 @@ export async function GET(request: NextRequest) {
           .order("created_at", { ascending: false })
           .limit(2);
 
-        // 현재 사용자가 좋아요를 눌렀는지 확인 (추후 구현)
-        // const { data: auth } = await auth();
-        // const isLiked = false; // TODO: 좋아요 확인 로직
+        // 현재 사용자가 좋아요를 눌렀는지 확인
+        let isLiked = false;
+        if (currentUserId) {
+          const { count: likeCount } = await supabase
+            .from("likes")
+            .select("*", { count: "exact", head: true })
+            .eq("post_id", post.id)
+            .eq("user_id", currentUserId);
+
+          isLiked = (likeCount || 0) > 0;
+        }
 
         return {
           id: post.id,
@@ -99,7 +126,7 @@ export async function GET(request: NextRequest) {
           user: post.user,
           likes_count: likesCount || 0,
           comments_count: commentsCount || 0,
-          is_liked: false, // TODO: 현재 사용자 좋아요 상태 확인
+          is_liked: isLiked,
           comments: comments || [],
         };
       })

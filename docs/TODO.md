@@ -112,17 +112,21 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [ ] Mobile: 전체 페이지로 표시 (추후 구현)
   - [ ] 게시물 상세 정보 표시 (추후 구현)
 
-#### 1-4. 홈 피드 - 좋아요 기능
-- [ ] 좋아요 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
-- [ ] `/api/likes` POST API 생성 (`app/api/likes/route.ts`)
-  - [ ] 좋아요 추가
-  - [ ] 중복 방지 검증
-- [ ] `/api/likes` DELETE API 생성 (`app/api/likes/[likeId]/route.ts` 또는 query param)
-  - [ ] 좋아요 취소
-- [ ] 좋아요 버튼 구현 (`PostCard` 내부)
-  - [ ] 빈 하트 ↔ 빨간 하트 상태 관리
-  - [ ] 클릭 애니메이션: scale(1.3) → scale(1)
-  - [ ] 더블탭 좋아요 (모바일): 이미지 더블탭 시 큰 하트 등장
+#### 1-4. 홈 피드 - 좋아요 기능 ✅
+- [x] 좋아요 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
+- [x] `/api/likes` POST API 생성 (`app/api/likes/route.ts`)
+  - [x] 좋아요 추가
+  - [x] 중복 방지 검증 (UNIQUE 제약 활용)
+  - [x] Clerk 인증 확인
+- [x] `/api/likes` DELETE API 생성 (`app/api/likes/route.ts` - query param 사용)
+  - [x] 좋아요 취소
+  - [x] Clerk 인증 확인
+- [x] 좋아요 버튼 구현 (`PostCard` 내부)
+  - [x] 빈 하트 ↔ 빨간 하트 상태 관리 (optimistic update)
+  - [x] 클릭 애니메이션: scale(1.3) → scale(1) (0.15초)
+  - [x] 더블탭 좋아요 (모바일): 이미지 더블탭 시 큰 하트 등장 (1초 후 사라짐)
+  - [x] 에러 처리 및 롤백
+  - [x] 로딩 상태 관리
 
 ---
 
