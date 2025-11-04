@@ -85,26 +85,32 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] Sidebar/MobileHeader/BottomNav 통합
   - [x] 반응형 레이아웃 적용
 
-#### 1-3. 홈 피드 - 게시물 목록
-- [ ] PostCard 컴포넌트 생성 (`components/post/PostCard.tsx`)
-  - [ ] 헤더: 프로필 이미지(32px), 사용자명, 시간, ⋯ 메뉴
-  - [ ] 이미지 영역: 1:1 정사각형
-  - [ ] 액션 버튼: 좋아요, 댓글, 공유(UI만), 북마크(UI만)
-  - [ ] 컨텐츠: 좋아요 수, 캡션(2줄 초과 시 "... 더 보기"), 댓글 미리보기(최신 2개)
-  - [ ] 클릭 시 게시물 상세 페이지로 이동 (모바일)
-- [ ] PostCardSkeleton 컴포넌트 생성 (`components/post/PostCardSkeleton.tsx`)
-  - [ ] 로딩 UI (회색 박스 + Shimmer 효과)
-- [ ] PostFeed 컴포넌트 생성 (`components/post/PostFeed.tsx`)
-  - [ ] 게시물 목록 표시
-  - [ ] 무한 스크롤 준비 (1-4에서 구현)
-- [ ] `/api/posts` GET API 생성 (`app/api/posts/route.ts`)
-  - [ ] 페이지네이션 (10개씩)
-  - [ ] 시간 역순 정렬
-  - [ ] 사용자 정보 포함 (JOIN)
-- [ ] 게시물 상세 페이지 라우트 생성 (`app/(main)/post/[postId]/page.tsx`)
+#### 1-3. 홈 피드 - 게시물 목록 ✅
+- [x] PostCard 컴포넌트 생성 (`components/post/PostCard.tsx`)
+  - [x] 헤더: 프로필 이미지(32px), 사용자명, 시간, ⋯ 메뉴
+  - [x] 이미지 영역: 1:1 정사각형
+  - [x] 액션 버튼: 좋아요, 댓글, 공유(UI만), 북마크(UI만)
+  - [x] 컨텐츠: 좋아요 수, 캡션(100자 초과 시 "... 더 보기"), 댓글 미리보기(최신 2개)
+  - [x] 클릭 시 게시물 상세 페이지로 이동 (모바일)
+- [x] PostCardSkeleton 컴포넌트 생성 (`components/post/PostCardSkeleton.tsx`)
+  - [x] 로딩 UI (회색 박스 + Shimmer 효과)
+- [x] PostFeed 컴포넌트 생성 (`components/post/PostFeed.tsx`)
+  - [x] 게시물 목록 표시
+  - [x] 로딩 상태 처리
+  - [x] 에러 처리
+  - [ ] 무한 스크롤 구현 (1-4에서 구현 예정)
+- [x] `/api/posts` GET API 생성 (`app/api/posts/route.ts`)
+  - [x] 페이지네이션 (10개씩, limit/offset 파라미터)
+  - [x] 시간 역순 정렬
+  - [x] 사용자 정보 포함 (JOIN)
+  - [x] 좋아요 수, 댓글 수 계산
+  - [x] 댓글 미리보기 (최신 2개)
+  - [x] 특정 사용자 필터링 (userId 쿼리 파라미터)
+- [x] 게시물 상세 페이지 라우트 생성 (`app/(main)/post/[postId]/page.tsx`)
+  - [x] 기본 라우트 구조 생성
   - [ ] Desktop: 모달로 표시 (추후 구현)
-  - [ ] Mobile: 전체 페이지로 표시
-  - [ ] 게시물 상세 정보 표시
+  - [ ] Mobile: 전체 페이지로 표시 (추후 구현)
+  - [ ] 게시물 상세 정보 표시 (추후 구현)
 
 #### 1-4. 홈 피드 - 좋아요 기능
 - [ ] 좋아요 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
