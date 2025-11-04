@@ -19,24 +19,27 @@ import { usePathname } from "next/navigation";
 import { Home, Search, PlusSquare, Heart, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";
+import { useCreatePost } from "@/components/providers/create-post-provider";
 
 interface BottomNavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   isUserButton?: boolean;
+  isAction?: boolean;
 }
 
 const navItems: BottomNavItem[] = [
   { href: "/", icon: Home, label: "홈" },
   { href: "/search", icon: Search, label: "검색" },
-  { href: "/create", icon: PlusSquare, label: "만들기" },
+  { href: "#", icon: PlusSquare, label: "만들기", isAction: true },
   { href: "/activity", icon: Heart, label: "좋아요" },
   { href: "/profile", icon: User, label: "프로필", isUserButton: true },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { openModal } = useCreatePost();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[50px] bg-white border-t border-[#dbdbdb] z-50 flex items-center justify-around">
@@ -55,6 +58,22 @@ export function BottomNav() {
                 }}
               />
             </div>
+          );
+        }
+
+        if (item.isAction) {
+          return (
+            <button
+              key={item.href}
+              onClick={openModal}
+              className={cn(
+                "flex items-center justify-center w-12 h-12 rounded-lg transition-colors",
+                "hover:bg-gray-50"
+              )}
+              title={item.label}
+            >
+              <Icon className="w-6 h-6 text-[#8e8e8e]" />
+            </button>
           );
         }
 

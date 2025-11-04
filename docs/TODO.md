@@ -181,43 +181,44 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 
 ---
 
-### 3. 프로필 페이지 & 팔로우 기능
+### 3. 프로필 페이지 & 팔로우 기능 ✅
 
-#### 3-1. 프로필 페이지 - 기본 정보
-- [ ] 프로필 페이지 라우트 그룹 설정 확인
+#### 3-1. 프로필 페이지 - 기본 정보 ✅
+- [x] 프로필 페이지 라우트 그룹 설정 확인
   - [x] `(main)` Route Group에 포함됨 (이미 설정됨)
-- [ ] `/profile/[userId]` 동적 라우트 생성 (`app/(main)/profile/[userId]/page.tsx`)
-- [ ] 프로필 헤더 컴포넌트 생성 (`components/profile/ProfileHeader.tsx`)
-  - [ ] 프로필 이미지: 150px (Desktop) / 90px (Mobile)
-  - [ ] 사용자명
-  - [ ] 통계: 게시물 수, 팔로워 수, 팔로잉 수
-  - [ ] "팔로우" 또는 "팔로잉" 버튼 (다른 사람 프로필)
-  - [ ] "프로필 편집" 버튼 (본인 프로필, 1차 제외)
-- [ ] `/api/users/[userId]` GET API 생성 (`app/api/users/[userId]/route.ts`)
-  - [ ] 사용자 정보 조회
-  - [ ] 통계 정보 포함 (user_stats 뷰 활용)
+- [x] `/profile/[userId]` 동적 라우트 생성 (`app/(main)/profile/[userId]/page.tsx`)
+- [x] `/profile` 본인 프로필 페이지 생성 (`app/(main)/profile/page.tsx`) - 자동 리다이렉트
+- [x] 프로필 헤더 컴포넌트 생성 (`components/profile/ProfileHeader.tsx`)
+  - [x] 프로필 이미지: 150px (Desktop) / 90px (Mobile)
+  - [x] 사용자명
+  - [x] 통계: 게시물 수, 팔로워 수, 팔로잉 수
+  - [x] "팔로우" 또는 "팔로잉" 버튼 (다른 사람 프로필)
+  - [x] "프로필 편집" 버튼 (본인 프로필, 1차 제외)
+- [x] `/api/users/[userId]` GET API 생성 (`app/api/users/[userId]/route.ts`)
+  - [x] 사용자 정보 조회
+  - [x] 통계 정보 포함 (user_stats 뷰 활용)
 
-#### 3-2. 프로필 페이지 - 게시물 그리드
-- [ ] PostGrid 컴포넌트 생성 (`components/profile/PostGrid.tsx`)
-  - [ ] 3열 그리드 레이아웃 (반응형)
-  - [ ] 1:1 정사각형 썸네일
-  - [ ] Hover 시 좋아요/댓글 수 표시
-  - [ ] 클릭 시 게시물 상세 모달/페이지
-- [ ] `/api/posts` GET API에 `userId` 쿼리 파라미터 추가
-  - [ ] 특정 사용자의 게시물만 필터링
+#### 3-2. 프로필 페이지 - 게시물 그리드 ✅
+- [x] PostGrid 컴포넌트 생성 (`components/profile/PostGrid.tsx`)
+  - [x] 3열 그리드 레이아웃 (반응형)
+  - [x] 1:1 정사각형 썸네일
+  - [x] Hover 시 좋아요/댓글 수 표시
+  - [x] 클릭 시 게시물 상세 모달/페이지
+- [x] `/api/posts` GET API에 `userId` 쿼리 파라미터 추가
+  - [x] 특정 사용자의 게시물만 필터링 (이미 구현되어 있었음)
 
-#### 3-3. 팔로우 기능
-- [ ] 팔로우 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
-- [ ] `/api/follows` POST API 생성 (`app/api/follows/route.ts`)
-  - [ ] 팔로우 추가
-  - [ ] 중복 방지 및 자기 자신 팔로우 방지
-- [ ] `/api/follows` DELETE API 생성 (`app/api/follows/[followId]/route.ts` 또는 query param)
-  - [ ] 언팔로우
-- [ ] 팔로우/언팔로우 버튼 구현 (`ProfileHeader` 내부)
-  - [ ] 미팔로우: "팔로우" (파란색)
-  - [ ] 팔로우 중: "팔로잉" (회색)
-  - [ ] Hover: "언팔로우" (빨간 테두리)
-  - [ ] 클릭 시 즉시 API 호출 및 UI 업데이트
+#### 3-3. 팔로우 기능 ✅
+- [x] 팔로우 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
+- [x] `/api/follows` POST API 생성 (`app/api/follows/route.ts`)
+  - [x] 팔로우 추가
+  - [x] 중복 방지 및 자기 자신 팔로우 방지
+- [x] `/api/follows` DELETE API 생성 (`app/api/follows/route.ts` - query param 사용)
+  - [x] 언팔로우
+- [x] 팔로우/언팔로우 버튼 구현 (`ProfileHeader` 내부)
+  - [x] 미팔로우: "팔로우" (파란색)
+  - [x] 팔로우 중: "팔로잉" (회색)
+  - [x] Hover: "언팔로우" (빨간 테두리)
+  - [x] 클릭 시 즉시 API 호출 및 UI 업데이트 (optimistic update 적용)
 
 #### 3-4. 최종 마무리 & 배포
 - [ ] 모바일 반응형 테스트

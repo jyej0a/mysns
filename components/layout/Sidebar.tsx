@@ -19,22 +19,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, PlusSquare, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCreatePost } from "@/components/providers/create-post-provider";
 
 interface SidebarItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  isAction?: boolean;
 }
 
 const menuItems: SidebarItem[] = [
   { href: "/", icon: Home, label: "홈" },
   { href: "/search", icon: Search, label: "검색" },
-  { href: "/create", icon: PlusSquare, label: "만들기" },
+  { href: "#", icon: PlusSquare, label: "만들기", isAction: true },
   { href: "/profile", icon: User, label: "프로필" },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { openModal } = useCreatePost();
 
   return (
     <aside className="fixed left-0 top-0 h-screen bg-white border-r border-[#dbdbdb] z-40 hidden md:block">
@@ -50,6 +53,22 @@ export function Sidebar() {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
+
+            if (item.isAction) {
+              return (
+                <button
+                  key={item.href}
+                  onClick={openModal}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full text-left",
+                    "hover:bg-gray-50"
+                  )}
+                >
+                  <Icon className="w-6 h-6 text-[#262626]" />
+                  <span className="text-base text-[#262626]">{item.label}</span>
+                </button>
+              );
+            }
 
             return (
               <Link
@@ -86,6 +105,22 @@ export function Sidebar() {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
+
+            if (item.isAction) {
+              return (
+                <button
+                  key={item.href}
+                  onClick={openModal}
+                  className={cn(
+                    "flex items-center justify-center w-12 h-12 rounded-lg transition-colors",
+                    "hover:bg-gray-50"
+                  )}
+                  title={item.label}
+                >
+                  <Icon className="w-6 h-6 text-[#262626]" />
+                </button>
+              );
+            }
 
             return (
               <Link
