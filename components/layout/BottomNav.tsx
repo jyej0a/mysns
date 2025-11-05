@@ -42,10 +42,13 @@ export function BottomNav() {
   const { openModal } = useCreatePost();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[50px] bg-white border-t border-[#dbdbdb] z-50 flex items-center justify-around">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[50px] bg-white border-t border-[#dbdbdb] z-50 flex items-center justify-around" aria-label="하단 네비게이션">
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive = pathname === item.href;
+        // 프로필 메뉴는 /profile 또는 /profile/[userId] 모두 활성화
+        const isActive = item.href === "/profile"
+          ? pathname === "/profile" || pathname?.startsWith("/profile/")
+          : pathname === item.href;
 
         if (item.isUserButton) {
           return (
@@ -66,13 +69,14 @@ export function BottomNav() {
             <button
               key={item.href}
               onClick={openModal}
+              aria-label={item.label}
               className={cn(
                 "flex items-center justify-center w-12 h-12 rounded-lg transition-colors",
-                "hover:bg-gray-50"
+                "hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2"
               )}
               title={item.label}
             >
-              <Icon className="w-6 h-6 text-[#8e8e8e]" />
+              <Icon className="w-6 h-6 text-[#8e8e8e]" aria-hidden="true" />
             </button>
           );
         }
@@ -81,18 +85,25 @@ export function BottomNav() {
           <Link
             key={item.href}
             href={item.href}
+            aria-label={item.label}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex items-center justify-center w-12 h-12 rounded-lg transition-colors",
-              "hover:bg-gray-50",
+              "flex items-center justify-center w-12 h-12 rounded-lg transition-colors relative",
+              "hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2",
               isActive && "bg-gray-50"
             )}
             title={item.label}
           >
+            {/* 활성 상태 표시 - 상단 작은 점 */}
+            {isActive && (
+              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#0095f6] rounded-full" />
+            )}
             <Icon
               className={cn(
-                "w-6 h-6",
+                "w-6 h-6 transition-colors",
                 isActive ? "text-[#262626]" : "text-[#8e8e8e]"
               )}
+              aria-hidden="true"
             />
           </Link>
         );

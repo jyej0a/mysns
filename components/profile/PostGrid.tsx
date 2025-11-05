@@ -23,6 +23,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Heart, MessageCircle, Grid3x3, Film, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { extractApiError, getErrorMessage } from "@/lib/error-handler";
+import { usePostModal } from "@/components/providers/post-modal-provider";
 
 interface PostGridProps {
   userId: string;
@@ -38,22 +40,29 @@ interface Post {
 type TabType = "posts" | "reels" | "tagged";
 
 export function PostGrid({ userId }: PostGridProps) {
+  const { openModal } = usePostModal();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("posts");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const response = await fetch(`/api/posts?userId=${userId}&limit=100`);
         if (!response.ok) {
-          throw new Error("Failed to fetch posts");
+          const error = await extractApiError(response);
+          throw new Error(error.message);
         }
         const { posts: fetchedPosts } = await response.json();
         setPosts(fetchedPosts || []);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
+      } catch (err) {
+        const errorMessage = getErrorMessage(err);
+        setError(errorMessage);
+        console.error("Error fetching posts:", err);
       } finally {
         setIsLoading(false);
       }
@@ -83,7 +92,33 @@ export function PostGrid({ userId }: PostGridProps) {
     );
   }
 
-  if (posts.length === 0) {
+  if (error) {
+    return (
+      <div className="w-full py-12 text-center space-y-4">
+        <p className="text-[#262626] font-semibold">오류가 발생했습니다</p>
+        <p className="text-sm text-[#8e8e8e]">{error}</p>
+        <button
+          onClick={() => {
+            setError(null);
+            setIsLoading(true);
+            fetch(`/api/posts?userId=${userId}&limit=100`)
+              .then((res) => {
+                if (!res.ok) throw new Error("Failed to fetch");
+                return res.json();
+              })
+              .then((data) => setPosts(data.posts || []))
+              .catch((err) => setError(getErrorMessage(err)))
+              .finally(() => setIsLoading(false));
+          }}
+          className="px-4 py-2 bg-[#0095f6] text-white rounded-lg hover:bg-[#0085e5] transition-colors font-semibold text-sm"
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
+
+  if (!isLoading && posts.length === 0) {
     return (
       <div className="w-full py-12 text-center">
         <p className="text-[#8e8e8e]">아직 게시물이 없습니다.</p>
@@ -128,28 +163,48 @@ export function PostGrid({ userId }: PostGridProps) {
       </div>
 
       {/* 게시물 그리드 */}
-      <div className="py-8">
+      <div className="py-8" data-post-grid>
         {activeTab === "posts" && (
           <div className="grid grid-cols-3 gap-1 md:gap-4">
         {posts.map((post) => (
-          <Link
+          <div
             key={post.id}
-            href={`/post/${post.id}`}
             className="relative aspect-square bg-gray-100 group"
             onMouseEnter={() => setHoveredPostId(post.id)}
             onMouseLeave={() => setHoveredPostId(null)}
           >
-            <Image
-              src={post.image_url}
-              alt="게시물 이미지"
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 33vw, 300px"
-            />
+            {/* Mobile: Link로 페이지 이동 */}
+            <Link
+              href={`/post/${post.id}`}
+              className="md:hidden relative w-full h-full block"
+            >
+              <Image
+                src={post.image_url}
+                alt="게시물 이미지"
+                fill
+                className="object-cover"
+                sizes="33vw"
+              />
+            </Link>
+
+            {/* Desktop: 버튼으로 모달 열기 */}
+            <button
+              onClick={() => openModal(post.id)}
+              className="hidden md:block relative w-full h-full cursor-pointer"
+              aria-label={`${post.id} 게시물 보기`}
+            >
+              <Image
+                src={post.image_url}
+                alt="게시물 이미지"
+                fill
+                className="object-cover"
+                sizes="300px"
+              />
+            </button>
 
             {/* Hover 오버레이 */}
             {hoveredPostId === post.id && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-6 text-white">
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-6 text-white pointer-events-none">
                 <div className="flex items-center gap-2">
                   <Heart className="w-5 h-5 fill-white" />
                   <span className="font-semibold">
@@ -164,7 +219,7 @@ export function PostGrid({ userId }: PostGridProps) {
                 </div>
               </div>
             )}
-          </Link>
+          </div>
         ))}
         </div>
         )}

@@ -116,13 +116,36 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     /* Instagram 폰트 패밀리 */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
+
   main {
     @apply max-w-7xl mx-auto pt-16 px-4;
+  }
+
+  /* 포커스 표시 개선 - 접근성 향상 */
+  *:focus-visible {
+    outline: 2px solid #0095f6;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* 버튼 포커스 스타일 */
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid #0095f6;
+    outline-offset: 2px;
+  }
+
+  /* 입력 필드 포커스 스타일 */
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #0095f6;
+    outline-offset: 2px;
   }
 }
 
@@ -131,25 +154,25 @@
   /* 브랜드 */
   --instagram-blue: #0095f6;
   --instagram-blue-hover: #0085e5;
-  
+
   /* 배경 */
   --instagram-bg: #fafafa;
   --instagram-card-bg: #ffffff;
   --instagram-border: #dbdbdb;
-  
+
   /* 텍스트 */
   --instagram-text-primary: #262626;
   --instagram-text-secondary: #8e8e8e;
-  
+
   /* 좋아요 */
   --instagram-like: #ed4956;
-  
+
   /* 타이포그래피 */
   --instagram-text-xs: 12px;
   --instagram-text-sm: 14px;
   --instagram-text-base: 16px;
   --instagram-text-xl: 20px;
-  
+
   /* 폰트 굵기 */
   --instagram-font-normal: 400;
   --instagram-font-semibold: 600;
@@ -162,10 +185,12 @@
     opacity: 0;
     transform: scale(0);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.2);
   }
+
   100% {
     opacity: 0;
     transform: scale(1);
@@ -177,6 +202,7 @@
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -187,6 +213,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -197,6 +224,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -220,3 +248,100 @@
 .btn-hover:active {
   transform: translateY(0);
 }
+
+/* Next.js 오류 오버레이 위치 조정 */
+/* 모든 가능한 오버레이 요소를 오른쪽 상단으로 이동 */
+/* 단, shadcn/ui Dialog는 제외 (data-slot="dialog-content" 속성 사용) */
+#__next-build-watcher,
+#__next-build-watcher>*,
+.nextjs-toast-errors-parent,
+.nextjs-toast-errors-parent>*,
+[data-nextjs-dialog],
+[data-nextjs-dialog]>*,
+[data-nextjs-toast],
+[data-nextjs-toast]>*,
+div[role="dialog"]:not([data-slot="dialog-content"]),
+div[role="alert"],
+div[class*="error"],
+div[class*="overlay"],
+div[class*="toast"],
+body>div[style*="position: fixed"]:not([data-nextjs-portal]):not([data-slot="dialog-content"]) {
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  max-width: 400px !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
+}
+
+/* 오버레이가 너무 크면 작게 조정 */
+/* 단, shadcn/ui Dialog는 제외 */
+[data-nextjs-dialog]>div,
+div[role="dialog"]:not([data-slot="dialog-content"])>div {
+  max-height: 60vh !important;
+  overflow-y: auto !important;
+}
+
+/* 오버레이를 완전히 숨기려면 아래 주석을 해제하고 위 스타일을 주석 처리하세요 */
+/*
+#__next-build-watcher,
+.nextjs-toast-errors-parent,
+[data-nextjs-dialog],
+[data-nextjs-toast],
+div[role="dialog"],
+div[role="alert"] {
+  display: none !important;
+}
+*/
+
+/* 프로필 아이콘 위의 작은 배지 숨기기 */
+/* 프로필 이미지 컨테이너 내의 모든 배지/알림 요소 숨기기 */
+.profile-avatar-wrapper>*:not(img):not(div[class*="rounded-full"]),
+.profile-avatar-wrapper::after,
+.profile-avatar-wrapper::before,
+.profile-avatar-wrapper+*,
+aside a[href*="/profile"] img+*,
+aside a[href*="/profile"] div[class*="rounded-full"]+*,
+aside a[href*="/profile"] .profile-avatar-wrapper>span,
+aside a[href*="/profile"] .profile-avatar-wrapper>div:not([class*="rounded-full"]),
+aside a[href*="/profile"] span[class*="badge"],
+aside a[href*="/profile"] div[class*="badge"],
+aside a[href*="/profile"] span[class*="notification"],
+aside a[href*="/profile"] div[class*="notification"],
+aside a[href*="/profile"] [class*="cl-badge"],
+aside a[href*="/profile"] [class*="cl-notification"],
+aside a[href*="/profile"] [class*="indicator"],
+aside a[href*="/profile"] [class*="badge"],
+aside a[href*="/profile"] [class*="notification"] {
+  display: none !important;
+}
+
+/* 프로필 이미지 위에 절대 위치로 배치된 작은 요소들 숨기기 */
+.profile-avatar-wrapper {
+  position: relative;
+  overflow: visible;
+}
+
+.profile-avatar-wrapper>*[style*="position: absolute"],
+.profile-avatar-wrapper>*[style*="position:fixed"],
+.profile-avatar-wrapper img+*,
+.profile-avatar-wrapper div[class*="rounded-full"]+* {
+  display: none !important;
+}
+
+/* 또는 배지를 오른쪽 상단으로 이동하려면 위의 display: none을 주석 처리하고 아래를 사용 */
+/*
+.profile-avatar-wrapper > *[style*="position: absolute"],
+.profile-avatar-wrapper > span[class*="badge"],
+.profile-avatar-wrapper > div[class*="badge"] {
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  left: auto !important;
+  bottom: auto !important;
+  z-index: 10000 !important;
+}
+*/

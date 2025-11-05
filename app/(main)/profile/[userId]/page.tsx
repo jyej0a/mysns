@@ -19,6 +19,12 @@ interface ProfilePageProps {
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { userId } = await params;
 
+  console.group("📄 [Profile Page] 페이지 렌더링");
+  console.log("userId (from params):", userId);
+  console.log("userId 타입:", typeof userId);
+  console.log("userId 길이:", userId?.length);
+  console.groupEnd();
+
   return (
     <div className="w-full min-h-screen bg-[#fafafa]">
       <div className="max-w-[935px] mx-auto px-4 py-8">

@@ -65,10 +65,44 @@
   - [x] 무한 스크롤 로딩 시 slide-up 애니메이션 적용
   - [x] 전환 애니메이션 keyframes 정의 (fadeIn, slideUp)
 
-### 접근성
-- [ ] 키보드 네비게이션 (Tab, Enter, ESC)
-- [ ] ARIA 라벨 추가
-- [ ] 포커스 표시 개선
+### 에러 핸들링 & UI 개선 ✅
+- [x] API 에러 처리
+  - [x] 통합 에러 핸들링 유틸리티 생성 (lib/error-handler.ts)
+  - [x] HTTP 상태 코드별 에러 메시지 처리
+  - [x] 모든 API 호출에 일관된 에러 처리 적용
+- [x] 네트워크 에러 처리
+  - [x] 네트워크 에러 감지 및 처리
+  - [x] 사용자 친화적 네트워크 에러 메시지
+- [x] 사용자 친화적 에러 메시지
+  - [x] 모든 에러 메시지를 한국어로 통일
+  - [x] 기술적 에러를 사용자 친화적 메시지로 변환
+  - [x] 재시도 버튼 제공
+- [x] Skeleton UI 적용
+  - [x] PostFeed 로딩 상태에 Skeleton 적용
+  - [x] PostModal 로딩 상태에 Skeleton 적용
+  - [x] ProfileHeader 로딩 상태에 Skeleton 적용
+  - [x] 모든 로딩 상태에 Skeleton 적용 완료
+
+### 접근성 ✅
+- [x] 키보드 네비게이션 (Tab, Enter, ESC)
+  - [x] Tab 키로 모든 인터랙티브 요소 접근 가능 확인
+  - [x] Enter 키로 버튼/링크 활성화 확인 (기본 동작)
+  - [x] ESC 키로 모달 닫기 확인 (Dialog 컴포넌트 기본 제공)
+  - [x] 키보드 포커스 순서 논리적 확인
+- [x] ARIA 라벨 추가
+  - [x] 아이콘 버튼에 aria-label 추가 (Sidebar, BottomNav, PostCard, PostModal 등)
+  - [x] 아이콘에 aria-hidden="true" 추가 (데코레이티브 아이콘)
+  - [x] 활성 링크에 aria-current="page" 추가
+  - [x] 좋아요 버튼에 aria-pressed 상태 추가
+  - [x] 드롭다운 메뉴에 aria-haspopup="menu" 추가
+  - [x] 입력 필드에 aria-label 및 aria-describedby 추가
+  - [x] nav 요소에 aria-label 추가
+  - [x] Dialog에 role="dialog" 및 aria-modal="true" 추가
+- [x] 포커스 표시 개선
+  - [x] 전역 포커스 스타일 설정 (globals.css)
+  - [x] focus-visible 스타일 적용 (2px 파란색 outline)
+  - [x] 모든 버튼과 링크에 포커스 표시 추가
+  - [x] 입력 필드 포커스 스타일 개선
 
 ## 관련 파일
 - `app/globals.css` (Tailwind CSS 설정)

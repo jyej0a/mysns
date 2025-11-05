@@ -67,16 +67,26 @@ export function CommentForm({ postId, onSubmit, isLoading = false }: CommentForm
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={!isSignedIn || isSubmitting || isLoading}
+          aria-label="댓글 입력"
+          aria-describedby={!isSignedIn ? "comment-login-required" : undefined}
           className={cn(
             "flex-1 text-sm outline-none text-[#262626] placeholder:text-[#8e8e8e]",
+            "focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded px-2 py-1",
             (!isSignedIn || isSubmitting || isLoading) && "opacity-50 cursor-not-allowed"
           )}
         />
+        {!isSignedIn && (
+          <span id="comment-login-required" className="sr-only">
+            댓글을 작성하려면 로그인이 필요합니다.
+          </span>
+        )}
         <button
           type="submit"
           disabled={!isSignedIn || !content.trim() || isSubmitting || isLoading}
+          aria-label="댓글 게시"
           className={cn(
             "text-sm font-semibold text-[#0095f6] transition-opacity",
+            "focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded px-2",
             (!isSignedIn || !content.trim() || isSubmitting || isLoading) &&
               "opacity-50 cursor-not-allowed",
             isSignedIn &&

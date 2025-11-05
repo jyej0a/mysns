@@ -282,11 +282,44 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] Hover: "언팔로우" (빨간 테두리)
   - [x] 클릭 시 즉시 API 호출 및 UI 업데이트 (optimistic update 적용)
 
-#### 3-4. 최종 마무리 & 배포
+#### 3-4. 프로필 이미지 기능 (사용자 직접 업로드) ✅
+- [x] 데이터베이스 스키마 업데이트
+  - [x] `users` 테이블에 `profile_image_url` 필드 추가 (마이그레이션)
+  - [x] Storage 정책 추가 (프로필 이미지 공개 접근)
+- [x] 프로필 이미지 업로드 API
+  - [x] `/api/users/[userId]/profile-image` POST API 생성
+  - [x] Supabase Storage에 이미지 업로드
+  - [x] 파일 검증 및 권한 검증
+- [x] 프로필 이미지 삭제 API
+  - [x] `/api/users/[userId]/profile-image` DELETE API 생성
+- [x] 프로필 편집 UI
+  - [x] 프로필 편집 모달 컴포넌트 생성 (`EditProfileModal.tsx`)
+  - [x] 프로필 이미지 업로드/삭제 기능
+  - [x] Bio 수정 기능
+  - [x] 본인 프로필에만 "프로필 편집" 버튼 표시
+- [x] 프로필 이미지 표시
+  - [x] `/api/users/[userId]` API에 `profile_image_url` 포함
+  - [x] ProfileHeader에서 프로필 이미지 표시 (없으면 이니셜 폴백)
+  - [ ] 모든 프로필 이미지 표시 위치 업데이트 (PostCard, CommentList 등) - 추후 작업
+
+#### 3-5. 프로필 페이지 UI/UX 개선 ✅
+- [x] Desktop에서 게시물 클릭 시 모달 열기
+  - [x] PostGrid에서 Desktop 클릭 시 PostModal 사용
+  - [x] usePostModal 훅 사용하여 모달 상태 관리
+  - [x] Mobile은 기존대로 페이지 이동 유지
+- [x] 통계 클릭 기능
+  - [x] 게시물 수 클릭 시 게시물 그리드로 스크롤
+  - [x] 팔로워 수 클릭 시 팔로워 목록 모달
+  - [x] 팔로잉 수 클릭 시 팔로잉 목록 모달
+  - [x] `/api/users/[userId]/followers` API 생성
+  - [x] `/api/users/[userId]/following` API 생성
+  - [x] FollowListModal 컴포넌트 생성
+
+#### 3-6. 최종 마무리 & 배포
 
 📄 **상세 TODO**: [ui-polish.md](./ui-polish/ui-polish.md)
 
-##### 3-4-1. 반응형 디자인 세부사항 ✅
+##### 3-6-1. 반응형 디자인 세부사항 ✅
 - [x] 모바일 반응형 테스트
   - [x] < 768px: BottomNav, MobileHeader
 - [x] 태블릿 반응형 테스트
@@ -301,7 +334,7 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 - [x] Mobile BottomNav 높이 50px 확인
 - [x] 프로필 이미지 크기 반응형 (150px Desktop / 90px Mobile)
 
-##### 3-4-2. 타이포그래피 & 컬러 스키마 ✅
+##### 3-6-2. 타이포그래피 & 컬러 스키마 ✅
 - [x] 폰트 패밀리 확인 (-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto)
   - [x] globals.css에 시스템 폰트 스택 설정 완료
 - [x] 텍스트 크기 확인 (12px, 14px, 16px, 20px)
@@ -323,7 +356,7 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] #ed4956 (Like): 좋아요 하트에 사용
   - [x] CSS 변수로 정의 완료 (globals.css)
 
-##### 3-4-3. 애니메이션 & 인터랙션 개선 ✅
+##### 3-6-3. 애니메이션 & 인터랙션 개선 ✅
 - [x] 모달 열기/닫기 애니메이션 (fade in/out)
   - [x] Dialog 컴포넌트에 fade-in/out 애니메이션 적용 (duration-300 ease-out)
   - [x] Overlay에 backdrop-blur-sm 효과 추가
@@ -345,19 +378,47 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 무한 스크롤 로딩 시 slide-up 애니메이션 적용
   - [x] 전환 애니메이션 keyframes 정의 (fadeIn, slideUp)
 
-##### 3-4-4. 에러 핸들링 & UI 개선
-- [ ] API 에러 처리
-- [ ] 네트워크 에러 처리
-- [ ] 사용자 친화적 에러 메시지
-- [ ] Skeleton UI 적용
-  - [ ] 모든 로딩 상태에 Skeleton 적용
+##### 3-6-4. 에러 핸들링 & UI 개선 ✅
+- [x] API 에러 처리
+  - [x] 통합 에러 핸들링 유틸리티 생성 (lib/error-handler.ts)
+  - [x] HTTP 상태 코드별 에러 메시지 처리
+  - [x] 모든 API 호출에 일관된 에러 처리 적용
+- [x] 네트워크 에러 처리
+  - [x] 네트워크 에러 감지 및 처리
+  - [x] 사용자 친화적 네트워크 에러 메시지
+  - [x] fetch 실패 시 적절한 에러 메시지 표시
+- [x] 사용자 친화적 에러 메시지
+  - [x] 모든 에러 메시지를 한국어로 통일
+  - [x] 기술적 에러를 사용자 친화적 메시지로 변환
+  - [x] 재시도 버튼 제공
+- [x] Skeleton UI 적용
+  - [x] PostFeed 로딩 상태에 Skeleton 적용 (이미 완료)
+  - [x] PostModal 로딩 상태에 Skeleton 적용
+  - [x] ProfileHeader 로딩 상태에 Skeleton 적용 (이미 완료)
+  - [x] 모든 로딩 상태에 Skeleton 적용 완료
 
-##### 3-4-5. 접근성
-- [ ] 키보드 네비게이션 (Tab, Enter, ESC)
-- [ ] ARIA 라벨 추가
-- [ ] 포커스 표시 개선
+##### 3-6-5. 접근성 ✅
+- [x] 키보드 네비게이션 (Tab, Enter, ESC)
+  - [x] Tab 키로 모든 인터랙티브 요소 접근 가능 확인
+  - [x] Enter 키로 버튼/링크 활성화 확인 (기본 동작)
+  - [x] ESC 키로 모달 닫기 확인 (Dialog 컴포넌트 기본 제공)
+  - [x] 키보드 포커스 순서 논리적 확인
+- [x] ARIA 라벨 추가
+  - [x] 아이콘 버튼에 aria-label 추가 (Sidebar, BottomNav, PostCard, PostModal 등)
+  - [x] 아이콘에 aria-hidden="true" 추가 (데코레이티브 아이콘)
+  - [x] 활성 링크에 aria-current="page" 추가
+  - [x] 좋아요 버튼에 aria-pressed 상태 추가
+  - [x] 드롭다운 메뉴에 aria-haspopup="menu" 추가
+  - [x] 입력 필드에 aria-label 및 aria-describedby 추가
+  - [x] nav 요소에 aria-label 추가
+  - [x] Dialog에 role="dialog" 및 aria-modal="true" 추가
+- [x] 포커스 표시 개선
+  - [x] 전역 포커스 스타일 설정 (globals.css)
+  - [x] focus-visible 스타일 적용 (2px 파란색 outline)
+  - [x] 모든 버튼과 링크에 포커스 표시 추가
+  - [x] 입력 필드 포커스 스타일 개선
 
-##### 3-4-6. 배포 준비
+##### 3-6-6. 배포 준비
 - [ ] Vercel 배포
   - [ ] 환경 변수 설정
   - [ ] Supabase 프로덕션 연결
@@ -369,9 +430,18 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 
 다음 기능들은 2차 확장에서 구현 예정:
 
+### 프로필 페이지 관련
+- [x] 통계 클릭 가능 (팔로워/팔로잉 목록 모달) ✅
+  - [x] 게시물 수 클릭 시 해당 사용자 게시물로 스크롤
+  - [x] 팔로워 수 클릭 시 팔로워 목록 모달
+  - [x] 팔로잉 수 클릭 시 팔로잉 목록 모달
+- [ ] 릴스 탭 기능 구현
+- [ ] 태그된 게시물 탭 기능 구현
+
+### 기타 기능
 - [ ] 검색 (사용자, 해시태그)
 - [ ] 탐색 페이지
-- [ ] 릴스
+- [ ] 릴스 (메인 기능)
 - [ ] 메시지 (DM)
 - [ ] 알림
 - [ ] 스토리
@@ -379,8 +449,6 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 - [ ] 이미지 여러 장
 - [ ] 공유 버튼 기능 (현재는 UI만)
 - [ ] 북마크 기능 (현재는 UI만)
-- [ ] 프로필 편집 (Clerk 기본 사용)
-- [ ] 팔로워/팔로잉 목록 모달
 
 ---
 

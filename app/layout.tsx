@@ -3,7 +3,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { koKR } from "@clerk/localizations";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import Navbar from "@/components/Navbar";
 import { SyncUserProvider } from "@/components/providers/sync-user-provider";
 import { PostModalProvider } from "@/components/providers/post-modal-provider";
 import "./globals.css";
@@ -36,7 +35,6 @@ export default function RootLayout({
         >
           <SyncUserProvider>
             <PostModalProvider>
-              <Navbar />
               {children}
             </PostModalProvider>
           </SyncUserProvider>

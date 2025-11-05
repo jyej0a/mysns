@@ -20,23 +20,35 @@ import { Heart, Send } from "lucide-react";
 
 export function MobileHeader() {
     return (
-        <header className="md:hidden fixed top-0 left-0 right-0 h-[60px] bg-white border-b border-[#dbdbdb] z-50 flex items-center justify-between px-4">
+        <header className="md:hidden fixed top-0 left-0 right-0 h-[60px] bg-white border-b border-[#dbdbdb] z-50 flex items-center justify-between px-4" role="banner">
             {/* 로고 */}
-            <Link href="/" className="text-xl font-bold text-[#262626]">
+            <Link
+              href="/"
+              aria-label="홈으로 이동"
+              className="text-xl font-bold text-[#262626] focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded"
+            >
                 Instagram
             </Link>
 
             {/* 우측 아이콘들 */}
             <div className="flex items-center gap-4">
-                {/* 알림 (좋아요) - 추후 구현 */}
-                <button className="text-[#262626] hover:opacity-70 transition-opacity">
-                    <Heart className="w-6 h-6" />
-                </button>
+                {/* 알림 (좋아요) */}
+                <Link
+                  href="/activity"
+                  aria-label="알림"
+                  className="text-[#262626] hover:opacity-70 transition-opacity focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded"
+                >
+                    <Heart className="w-6 h-6" aria-hidden="true" />
+                </Link>
 
-                {/* DM (메시지) - 추후 구현 */}
-                <button className="text-[#262626] hover:opacity-70 transition-opacity">
-                    <Send className="w-6 h-6" />
-                </button>
+                {/* DM (메시지) */}
+                <Link
+                  href="/messages"
+                  aria-label="메시지"
+                  className="text-[#262626] hover:opacity-70 transition-opacity focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded"
+                >
+                    <Send className="w-6 h-6" aria-hidden="true" />
+                </Link>
 
                 {/* 프로필 */}
                 <UserButton

@@ -31,6 +31,7 @@ import { ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
+import { extractApiError, getErrorMessage } from "@/lib/error-handler";
 
 interface CreatePostModalProps {
   open: boolean;
@@ -151,33 +152,12 @@ export function CreatePostModal({
         body: formData,
       });
 
-      // 응답이 JSON인지 확인
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        // JSON 파싱 실패 시 네트워크 에러로 간주
-        throw new Error("서버 응답을 처리할 수 없습니다. 네트워크 연결을 확인해주세요.");
-      }
-
       if (!response.ok) {
-        // HTTP 상태 코드에 따른 에러 메시지 구분
-        let errorMessage = data.error || "게시물 작성에 실패했습니다.";
-        
-        if (response.status === 401) {
-          errorMessage = "로그인이 필요합니다. 다시 로그인해주세요.";
-        } else if (response.status === 400) {
-          errorMessage = data.error || "입력한 정보를 확인해주세요.";
-        } else if (response.status === 413) {
-          errorMessage = "파일 크기가 너무 큽니다. 5MB 이하의 파일을 선택해주세요.";
-        } else if (response.status >= 500) {
-          errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
-        } else if (response.status === 0 || !response.ok) {
-          errorMessage = "네트워크 연결을 확인해주세요.";
-        }
-
-        throw new Error(errorMessage);
+        const error = await extractApiError(response);
+        throw new Error(error.message);
       }
+
+      const data = await response.json();
 
       // 성공 시 모달 닫기 및 상태 초기화
       handleClose();
@@ -188,12 +168,9 @@ export function CreatePostModal({
       
       // 페이지 새로고침은 더 이상 필요하지 않지만, 혹시 모를 경우를 대비해 유지
       // window.location.reload();
-    } catch (error) {
-      console.error("게시물 작성 오류:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "게시물 작성에 실패했습니다. 잠시 후 다시 시도해주세요.";
+    } catch (err) {
+      console.error("게시물 작성 오류:", err);
+      const errorMessage = getErrorMessage(err);
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -270,10 +247,10 @@ export function CreatePostModal({
               />
               <button
                 onClick={handleRemoveImage}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors"
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                 aria-label="이미지 제거"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-5 h-5 text-white" aria-hidden="true" />
               </button>
             </div>
           )}
@@ -294,16 +271,20 @@ export function CreatePostModal({
                   setError(null); // 입력 시 에러 초기화
                 }}
                 maxLength={2200}
-                className="resize-none min-h-[100px] border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 text-sm"
+                aria-label="게시물 캡션 입력"
+                aria-describedby="caption-counter"
+                className="resize-none min-h-[100px] border-0 focus-visible:ring-2 focus-visible:ring-[#0095f6] focus-visible:ring-offset-2 p-0 text-sm"
                 rows={3}
               />
             </div>
             <div className="flex justify-end">
               <span
+                id="caption-counter"
                 className={cn(
                   "text-xs text-[#8e8e8e]",
                   caption.length >= 2200 && "text-red-500"
                 )}
+                aria-live="polite"
               >
                 {caption.length}/2,200
               </span>
@@ -327,7 +308,9 @@ export function CreatePostModal({
             <Button
               onClick={handleSubmit}
               disabled={!selectedImage || isSubmitting}
-              className="w-full bg-[#0095f6] text-white hover:bg-[#1877f2] disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={isSubmitting ? "게시 중" : "게시물 게시"}
+              aria-busy={isSubmitting}
+              className="w-full bg-[#0095f6] text-white hover:bg-[#1877f2] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
             >
               {isSubmitting ? "게시 중..." : "게시"}
             </Button>

@@ -17,6 +17,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileHeader } from "@/components/layout/MobileHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { CreatePostProvider } from "@/components/providers/create-post-provider";
+import { PostModalProvider } from "@/components/providers/post-modal-provider";
 import { cn } from "@/lib/utils";
 
 export default function MainLayout({
@@ -26,6 +27,7 @@ export default function MainLayout({
 }) {
   return (
     <CreatePostProvider>
+      <PostModalProvider>
         <div className="min-h-screen bg-[#fafafa]">
         {/* Sidebar (Desktop & Tablet) */}
         <Sidebar />
@@ -54,6 +56,7 @@ export default function MainLayout({
         {/* Bottom Navigation (Mobile) */}
         <BottomNav />
       </div>
+      </PostModalProvider>
     </CreatePostProvider>
   );
 }

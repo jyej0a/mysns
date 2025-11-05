@@ -121,10 +121,11 @@ export function CommentList({
                   {isOwnComment && onDelete && (
                     <button
                       onClick={() => handleDeleteClick(comment.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-[#262626] hover:opacity-70"
+                      aria-label="댓글 삭제"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-[#262626] hover:opacity-70 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded"
                       title="댓글 삭제"
                     >
-                      <MoreHorizontal className="w-4 h-4" />
+                      <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
                     </button>
                   )}
                 </div>

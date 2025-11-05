@@ -47,7 +47,47 @@
 - [x] Tablet 레이아웃
 
 ## 진행 중 / 예정 작업
-- [ ] (현재 모든 주요 기능 완료)
+
+### 프로필 이미지 기능 (사용자 직접 업로드) ✅
+- [x] 데이터베이스 스키마 업데이트
+  - [x] `users` 테이블에 `profile_image_url` 필드 추가 (마이그레이션)
+  - [x] 필드 타입: TEXT, nullable
+  - [x] Storage 정책 추가 (프로필 이미지 공개 접근)
+- [x] 프로필 이미지 업로드 API
+  - [x] `/api/users/[userId]/profile-image` POST API 생성
+  - [x] Supabase Storage에 이미지 업로드 (`{clerk_id}/profile/{filename}`)
+  - [x] 업로드된 이미지 URL을 `users.profile_image_url`에 저장
+  - [x] 파일 검증 (이미지 형식만, 최대 5MB)
+  - [x] 권한 검증 (본인만 업로드 가능)
+- [x] 프로필 이미지 삭제 API
+  - [x] `/api/users/[userId]/profile-image` DELETE API 생성
+  - [x] Storage에서 기존 이미지 파일 삭제
+  - [x] `users.profile_image_url`을 NULL로 업데이트
+- [x] 프로필 편집 UI
+  - [x] 프로필 편집 모달 컴포넌트 생성 (`EditProfileModal.tsx`)
+  - [x] 프로필 이미지 업로드/삭제 기능
+  - [x] Bio 수정 기능
+  - [x] 본인 프로필에만 "프로필 편집" 버튼 표시
+- [x] 프로필 이미지 표시
+  - [x] `/api/users/[userId]` API에 `profile_image_url` 포함
+  - [x] ProfileHeader에서 프로필 이미지 표시 (없으면 이니셜 폴백)
+  - [ ] 모든 프로필 이미지 표시 위치 업데이트 (PostCard, CommentList 등) - 추후 작업
+
+### UI/UX 개선 ✅
+- [x] Desktop에서 게시물 클릭 시 모달 열기
+  - [x] PostGrid에서 Desktop 클릭 시 PostModal 사용
+  - [x] usePostModal 훅 사용하여 모달 상태 관리
+  - [x] Mobile은 기존대로 페이지 이동
+- [x] 통계 클릭 기능
+  - [x] 게시물 수 클릭 시 게시물 그리드로 스크롤
+  - [x] 팔로워 수 클릭 시 팔로워 목록 모달
+  - [x] 팔로잉 수 클릭 시 팔로잉 목록 모달
+  - [x] 팔로워/팔로잉 목록 API 생성
+  - [x] FollowListModal 컴포넌트 생성
+
+### 2차 확장 기능
+- [ ] 릴스 탭 기능 구현
+- [ ] 태그된 게시물 탭 기능 구현
 
 ## 관련 파일
 - `app/(main)/profile/[userId]/page.tsx`

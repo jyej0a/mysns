@@ -258,8 +258,12 @@ export function PostCard({ post, currentUserId, onDelete }: PostCardProps) {
         {isOwnPost ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="text-[#262626] hover:opacity-70">
-                <MoreHorizontal className="w-5 h-5" />
+              <button
+                aria-label="게시물 메뉴"
+                aria-haspopup="menu"
+                className="text-[#262626] hover:opacity-70 focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded"
+              >
+                <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -272,8 +276,11 @@ export function PostCard({ post, currentUserId, onDelete }: PostCardProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <button className="text-[#262626] hover:opacity-70">
-            <MoreHorizontal className="w-5 h-5" />
+          <button
+            aria-label="게시물 옵션"
+            className="text-[#262626] hover:opacity-70 focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded"
+          >
+            <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
           </button>
         )}
       </header>
@@ -282,6 +289,8 @@ export function PostCard({ post, currentUserId, onDelete }: PostCardProps) {
       <div 
         className="relative w-full aspect-square bg-gray-100"
         onDoubleClick={handleDoubleTap}
+        role="img"
+        aria-label={post.caption || `${post.user.name}의 게시물 이미지`}
       >
         {/* 더블탭 큰 하트 애니메이션 (모바일) */}
         {showDoubleTapHeart && (
@@ -334,8 +343,10 @@ export function PostCard({ post, currentUserId, onDelete }: PostCardProps) {
           <button
             onClick={handleLikeToggle}
             disabled={!isSignedIn || isLoading}
+            aria-label={isLiked ? "좋아요 취소" : "좋아요"}
+            aria-pressed={isLiked}
             className={cn(
-              "transition-opacity",
+              "transition-opacity focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2",
               !isSignedIn && "cursor-not-allowed opacity-50",
               isLoading && "cursor-wait",
               isSignedIn && !isLoading && "hover:opacity-70"
@@ -347,20 +358,28 @@ export function PostCard({ post, currentUserId, onDelete }: PostCardProps) {
                 isLiked ? "fill-[#ed4956] text-[#ed4956]" : "text-[#262626]",
                 isAnimating && "scale-[1.3]"
               )}
+              aria-hidden="true"
             />
           </button>
           <Link
             href={`/post/${post.id}`}
-            className="text-[#262626] hover:opacity-70 transition-opacity"
+            aria-label="댓글 보기"
+            className="text-[#262626] hover:opacity-70 transition-opacity focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded"
           >
-            <MessageCircle className="w-6 h-6" />
+            <MessageCircle className="w-6 h-6" aria-hidden="true" />
           </Link>
-          <button className="text-[#262626] hover:opacity-70 transition-opacity">
-            <Send className="w-6 h-6" />
+          <button
+            aria-label="공유하기"
+            className="text-[#262626] hover:opacity-70 transition-opacity focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded"
+          >
+            <Send className="w-6 h-6" aria-hidden="true" />
           </button>
         </div>
-        <button className="text-[#262626] hover:opacity-70 transition-opacity">
-          <Bookmark className="w-6 h-6" />
+        <button
+          aria-label="저장하기"
+          className="text-[#262626] hover:opacity-70 transition-opacity focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded"
+        >
+          <Bookmark className="w-6 h-6" aria-hidden="true" />
         </button>
       </div>
 

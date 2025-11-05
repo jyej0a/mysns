@@ -19,7 +19,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { UserPlus, Check } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { extractApiError, getErrorMessage } from "@/lib/error-handler";
+import { EditProfileModal } from "@/components/profile/EditProfileModal";
+import { FollowListModal } from "@/components/profile/FollowListModal";
 
 interface ProfileHeaderProps {
   userId: string;
@@ -29,6 +34,7 @@ interface UserData {
   id: string;
   name: string;
   bio: string | null;
+  profile_image_url: string | null;
   posts_count: number;
   followers_count: number;
   following_count: number;
@@ -43,67 +49,102 @@ export function ProfileHeader({ userId }: ProfileHeaderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followingModalOpen, setFollowingModalOpen] = useState(false);
 
   // 사용자 정보 가져오기
   useEffect(() => {
     const fetchUserData = async () => {
+      console.group("🔍 [ProfileHeader] 사용자 정보 가져오기");
+      console.log("userId:", userId);
+      
       try {
+        console.log("📡 API 요청 시작:", `/api/users/${userId}`);
         const response = await fetch(`/api/users/${userId}`);
         
-        // 응답 본문을 텍스트로 먼저 읽기 (디버깅용)
-        const responseText = await response.text();
+        console.log("📥 API 응답 상태:", response.status, response.statusText);
+        console.log("📥 API 응답 헤더:", {
+          contentType: response.headers.get("content-type"),
+          contentTypeAll: Array.from(response.headers.entries()),
+        });
         
         if (!response.ok) {
-          // JSON 파싱 시도
-          let errorData = {};
-          let errorMessage = `Failed to fetch user data (${response.status})`;
+          // 응답 본문을 클론하여 읽기 (한 번만 읽을 수 있으므로)
+          const clonedResponse = response.clone();
+          const error = await extractApiError(clonedResponse);
           
-          try {
-            errorData = JSON.parse(responseText);
-            errorMessage = errorData.error || errorData.details || errorMessage;
-          } catch (parseError) {
-            // JSON이 아닌 경우 텍스트를 에러 메시지로 사용
-            errorMessage = responseText || errorMessage;
-          }
+          // 에러 정보를 명확하게 로그에 출력
+          const errorDetails = error.details 
+            ? (typeof error.details === 'string' 
+                ? error.details 
+                : JSON.stringify(error.details, null, 2))
+            : "없음";
           
-          console.error("Error fetching user data:", {
-            status: response.status,
+          console.error("❌ API 에러:", {
+            status: error.status,
+            message: error.message,
+            details: errorDetails,
             statusText: response.statusText,
-            error: errorMessage,
-            errorData,
-            responseText,
-            userId,
+            url: response.url,
+            userId: userId,
           });
           
-          throw new Error(errorMessage);
+          // 404 에러인 경우 더 명확한 메시지
+          if (error.status === 404) {
+            throw new Error("사용자를 찾을 수 없습니다.");
+          }
+          
+          throw new Error(error.message || "사용자 정보를 불러올 수 없습니다.");
         }
         
-        // 성공 응답 파싱
-        let data;
-        try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error("Failed to parse response JSON:", parseError, responseText);
-          throw new Error("서버 응답을 파싱할 수 없습니다.");
-        }
+        const data = await response.json();
+        console.log("✅ API 응답 데이터:", data);
         
         if (!data.user) {
-          console.error("Invalid response format:", data);
+          console.error("❌ 사용자 데이터 형식 오류:", data);
           throw new Error("사용자 데이터 형식이 올바르지 않습니다.");
         }
         
-        setUserData(data.user);
-        setIsFollowing(data.user.is_following);
-      } catch (error) {
-        console.error("Error fetching user data:", {
-          error,
-          message: error instanceof Error ? error.message : String(error),
-          userId,
+        console.log("✅ 사용자 데이터 설정:", {
+          id: data.user.id,
+          name: data.user.name,
+          is_current_user: data.user.is_current_user,
         });
+        
+        setUserData({
+          ...data.user,
+          profile_image_url: data.user.profile_image_url || null,
+        });
+        setIsFollowing(data.user.is_following);
+      } catch (err) {
+        const errorMessage = getErrorMessage(err);
+        
+        // 에러 정보를 안전하게 직렬화
+        let errorInfo: Record<string, unknown> = {
+          errorMessage,
+          userId,
+        };
+        
+        if (err instanceof Error) {
+          errorInfo = {
+            ...errorInfo,
+            name: err.name,
+            message: err.message,
+            // stack은 너무 길 수 있으므로 제외하거나 제한
+            hasStack: !!err.stack,
+          };
+        } else {
+          errorInfo.error = String(err);
+        }
+        
+        console.error("❌ Error fetching user data:", errorInfo);
+        
         // 에러 상태를 설정하여 UI에 표시
         setUserData(null);
       } finally {
         setIsLoading(false);
+        console.groupEnd();
       }
     };
 
@@ -193,8 +234,17 @@ export function ProfileHeader({ userId }: ProfileHeaderProps) {
 
   if (!userData) {
     return (
-      <div className="w-full py-8 text-center">
-        <p className="text-[#8e8e8e]">사용자를 찾을 수 없습니다.</p>
+      <div className="w-full py-8 text-center space-y-4">
+        <p className="text-[#262626] font-semibold text-lg">사용자를 찾을 수 없습니다</p>
+        <p className="text-sm text-[#8e8e8e]">
+          요청하신 사용자 프로필이 존재하지 않거나 삭제되었을 수 있습니다.
+        </p>
+        <Link
+          href="/"
+          className="inline-block px-4 py-2 bg-[#0095f6] text-white rounded-lg hover:bg-[#0085e5] transition-colors font-semibold text-sm"
+        >
+          홈으로 돌아가기
+        </Link>
       </div>
     );
   }
@@ -203,10 +253,20 @@ export function ProfileHeader({ userId }: ProfileHeaderProps) {
     <div className="w-full py-8 border-b border-[#dbdbdb]">
       <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
         {/* 프로필 이미지 */}
-        <div className="w-[90px] h-[90px] md:w-[150px] md:h-[150px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
-          <span className="text-3xl md:text-5xl font-semibold text-[#262626]">
-            {userData.name.charAt(0).toUpperCase()}
-          </span>
+        <div className="w-[90px] h-[90px] md:w-[150px] md:h-[150px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0 relative">
+          {userData.profile_image_url ? (
+            <Image
+              src={userData.profile_image_url}
+              alt={`${userData.name}의 프로필 이미지`}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 90px, 150px"
+            />
+          ) : (
+            <span className="text-3xl md:text-5xl font-semibold text-[#262626]">
+              {userData.name.charAt(0).toUpperCase()}
+            </span>
+          )}
         </div>
 
         {/* 사용자 정보 */}
@@ -217,6 +277,17 @@ export function ProfileHeader({ userId }: ProfileHeaderProps) {
               {userData.name}
             </h1>
 
+            {/* 프로필 편집 버튼 (본인 프로필) */}
+            {userData.is_current_user && (
+              <button
+                onClick={() => setEditModalOpen(true)}
+                className="px-6 py-1.5 rounded-lg text-sm font-semibold bg-white border border-[#dbdbdb] text-[#262626] hover:bg-[#fafafa] transition-colors focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2"
+                aria-label="프로필 편집"
+              >
+                프로필 편집
+              </button>
+            )}
+
             {/* 팔로우/언팔로우 버튼 */}
             {!userData.is_current_user && (
               <button
@@ -224,8 +295,11 @@ export function ProfileHeader({ userId }: ProfileHeaderProps) {
                 onMouseLeave={() => setHovering(false)}
                 onClick={handleFollowToggle}
                 disabled={!isSignedIn || isFollowLoading}
+                aria-label={isFollowing ? (hovering ? "언팔로우" : "팔로잉 중") : "팔로우"}
+                aria-pressed={isFollowing}
                 className={cn(
                   "px-6 py-1.5 rounded-lg text-sm font-semibold transition-all",
+                  "focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
                   isFollowing
                     ? hovering
@@ -264,27 +338,91 @@ export function ProfileHeader({ userId }: ProfileHeaderProps) {
 
           {/* 통계 */}
           <div className="flex gap-6 mb-4">
-            <div className="text-sm">
+            <button
+              onClick={() => {
+                // 게시물 수 클릭 시 게시물 그리드로 스크롤
+                const postGrid = document.querySelector('[data-post-grid]');
+                if (postGrid) {
+                  postGrid.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
+              className="text-sm hover:opacity-70 transition-opacity cursor-pointer"
+            >
               <span className="font-semibold text-[#262626]">
                 {formatNumber(userData.posts_count)}
               </span>
               <span className="text-[#8e8e8e] ml-1">게시물</span>
-            </div>
-            <div className="text-sm">
+            </button>
+            <button
+              onClick={() => setFollowersModalOpen(true)}
+              className="text-sm hover:opacity-70 transition-opacity cursor-pointer"
+            >
               <span className="font-semibold text-[#262626]">
                 {formatNumber(userData.followers_count)}
               </span>
               <span className="text-[#8e8e8e] ml-1">팔로워</span>
-            </div>
-            <div className="text-sm">
+            </button>
+            <button
+              onClick={() => setFollowingModalOpen(true)}
+              className="text-sm hover:opacity-70 transition-opacity cursor-pointer"
+            >
               <span className="font-semibold text-[#262626]">
                 {formatNumber(userData.following_count)}
               </span>
               <span className="text-[#8e8e8e] ml-1">팔로잉</span>
-            </div>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* 프로필 편집 모달 */}
+      {userData.is_current_user && (
+        <EditProfileModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          userId={userId}
+          currentBio={userData.bio}
+          currentProfileImageUrl={userData.profile_image_url}
+          onUpdate={() => {
+            // 프로필 업데이트 후 데이터 새로고침
+            const fetchUserData = async () => {
+              try {
+                const response = await fetch(`/api/users/${userId}`);
+                if (!response.ok) {
+                  const error = await extractApiError(response);
+                  throw new Error(error.message);
+                }
+                const data = await response.json();
+                setUserData({
+                  ...data.user,
+                  profile_image_url: data.user.profile_image_url || null,
+                });
+              } catch (err) {
+                console.error("Failed to refresh user data:", err);
+              }
+            };
+            fetchUserData();
+          }}
+        />
+      )}
+
+      {/* 팔로워 목록 모달 */}
+      <FollowListModal
+        open={followersModalOpen}
+        onOpenChange={setFollowersModalOpen}
+        userId={userId}
+        type="followers"
+        title="팔로워"
+      />
+
+      {/* 팔로잉 목록 모달 */}
+      <FollowListModal
+        open={followingModalOpen}
+        onOpenChange={setFollowingModalOpen}
+        userId={userId}
+        type="following"
+        title="팔로잉"
+      />
     </div>
   );
 }

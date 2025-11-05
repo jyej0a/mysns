@@ -18,6 +18,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { PostCard } from "./PostCard";
 import { PostCardSkeleton } from "./PostCardSkeleton";
+import { extractApiError, getErrorMessage } from "@/lib/error-handler";
 
 interface Post {
   id: string;
@@ -77,17 +78,8 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
       const response = await fetch(`/api/posts?limit=${LIMIT}&offset=${offset}`);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        // 네트워크 에러와 서버 에러 구분
-        if (response.status === 500) {
-          throw new Error("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-        } else if (response.status === 404) {
-          throw new Error("게시물을 찾을 수 없습니다.");
-        } else if (response.status >= 400 && response.status < 500) {
-          throw new Error(errorData.error || "요청을 처리할 수 없습니다.");
-        } else {
-          throw new Error(errorData.error || "게시물을 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요.");
-        }
+        const error = await extractApiError(response);
+        throw new Error(error.message);
       }
 
       const data = await response.json();
@@ -109,7 +101,7 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
       setHasMore(hasMoreData);
       setHasError(false); // 성공 시 에러 상태 해제
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "알 수 없는 오류";
+      const errorMessage = getErrorMessage(err);
       setError(errorMessage);
       setHasError(true); // 에러 발생 표시
       setHasMore(false); // 더 이상 로드하지 않음
