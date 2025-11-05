@@ -28,6 +28,7 @@ interface ProfileHeaderProps {
 interface UserData {
   id: string;
   name: string;
+  bio: string | null;
   posts_count: number;
   followers_count: number;
   following_count: number;
@@ -48,14 +49,59 @@ export function ProfileHeader({ userId }: ProfileHeaderProps) {
     const fetchUserData = async () => {
       try {
         const response = await fetch(`/api/users/${userId}`);
+        
+        // 응답 본문을 텍스트로 먼저 읽기 (디버깅용)
+        const responseText = await response.text();
+        
         if (!response.ok) {
-          throw new Error("Failed to fetch user data");
+          // JSON 파싱 시도
+          let errorData = {};
+          let errorMessage = `Failed to fetch user data (${response.status})`;
+          
+          try {
+            errorData = JSON.parse(responseText);
+            errorMessage = errorData.error || errorData.details || errorMessage;
+          } catch (parseError) {
+            // JSON이 아닌 경우 텍스트를 에러 메시지로 사용
+            errorMessage = responseText || errorMessage;
+          }
+          
+          console.error("Error fetching user data:", {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorMessage,
+            errorData,
+            responseText,
+            userId,
+          });
+          
+          throw new Error(errorMessage);
         }
-        const { user } = await response.json();
-        setUserData(user);
-        setIsFollowing(user.is_following);
+        
+        // 성공 응답 파싱
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error("Failed to parse response JSON:", parseError, responseText);
+          throw new Error("서버 응답을 파싱할 수 없습니다.");
+        }
+        
+        if (!data.user) {
+          console.error("Invalid response format:", data);
+          throw new Error("사용자 데이터 형식이 올바르지 않습니다.");
+        }
+        
+        setUserData(data.user);
+        setIsFollowing(data.user.is_following);
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error fetching user data:", {
+          error,
+          message: error instanceof Error ? error.message : String(error),
+          userId,
+        });
+        // 에러 상태를 설정하여 UI에 표시
+        setUserData(null);
       } finally {
         setIsLoading(false);
       }
@@ -208,6 +254,13 @@ export function ProfileHeader({ userId }: ProfileHeaderProps) {
               </button>
             )}
           </div>
+
+          {/* Bio 표시 */}
+          {userData.bio && (
+            <div className="mb-4">
+              <p className="text-sm text-[#262626]">{userData.bio}</p>
+            </div>
+          )}
 
           {/* 통계 */}
           <div className="flex gap-6 mb-4">

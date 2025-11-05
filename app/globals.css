@@ -118,10 +118,42 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Instagram 폰트 패밀리 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
   main {
     @apply max-w-7xl mx-auto pt-16 px-4;
   }
+}
+
+/* Instagram 컬러 스키마 변수 */
+:root {
+  /* 브랜드 */
+  --instagram-blue: #0095f6;
+  --instagram-blue-hover: #0085e5;
+  
+  /* 배경 */
+  --instagram-bg: #fafafa;
+  --instagram-card-bg: #ffffff;
+  --instagram-border: #dbdbdb;
+  
+  /* 텍스트 */
+  --instagram-text-primary: #262626;
+  --instagram-text-secondary: #8e8e8e;
+  
+  /* 좋아요 */
+  --instagram-like: #ed4956;
+  
+  /* 타이포그래피 */
+  --instagram-text-xs: 12px;
+  --instagram-text-sm: 14px;
+  --instagram-text-base: 16px;
+  --instagram-text-xl: 20px;
+  
+  /* 폰트 굵기 */
+  --instagram-font-normal: 400;
+  --instagram-font-semibold: 600;
+  --instagram-font-bold: 700;
 }
 
 /* 더블탭 좋아요 하트 애니메이션 */
@@ -148,4 +180,43 @@
   100% {
     transform: translateX(100%);
   }
+}
+
+/* 로딩 상태 전환 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 부드러운 전환 효과 */
+.transition-smooth {
+  transition: all 0.2s ease-in-out;
+}
+
+/* 버튼 hover 효과 일관성 */
+.btn-hover {
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-hover:hover {
+  transform: translateY(-1px);
+}
+
+.btn-hover:active {
+  transform: translateY(0);
 }

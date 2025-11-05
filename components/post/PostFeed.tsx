@@ -165,9 +165,28 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMore, isLoadingMore, loading, hasError, posts.length]);
 
+  // 게시물 삭제 핸들러 (조건부 return 이전에 선언 필수)
+  const handlePostDelete = useCallback((postId: string) => {
+    setPosts((prev) => prev.filter((post) => post.id !== postId));
+  }, []);
+
+  // 게시물 생성 이벤트 리스너 (조건부 return 이전에 선언 필수)
+  useEffect(() => {
+    const handlePostCreated = () => {
+      // 피드 새로고침 (게시물 작성 후 호출)
+      fetchPosts(0, false);
+    };
+
+    window.addEventListener("postCreated", handlePostCreated);
+    return () => {
+      window.removeEventListener("postCreated", handlePostCreated);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // fetchPosts는 안정적인 함수이므로 dependency에 포함하지 않음
+
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 animate-[fadeIn_0.3s_ease-in]">
         {Array.from({ length: 3 }).map((_, i) => (
           <PostCardSkeleton key={i} />
         ))}
@@ -204,11 +223,6 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
     );
   }
 
-  // 게시물 삭제 핸들러
-  const handlePostDelete = useCallback((postId: string) => {
-    setPosts((prev) => prev.filter((post) => post.id !== postId));
-  }, []);
-
   return (
     <div className="space-y-4">
       {posts.map((post) => (
@@ -224,7 +238,7 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
       {hasMore && (
         <div ref={observerTarget} className="py-4">
           {isLoadingMore && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-[slideUp_0.3s_ease-out]">
               {Array.from({ length: 2 }).map((_, i) => (
                 <PostCardSkeleton key={`skeleton-${i}`} />
               ))}

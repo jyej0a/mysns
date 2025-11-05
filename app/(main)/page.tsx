@@ -12,7 +12,7 @@ import { PostFeed } from "@/components/post/PostFeed";
 
 export default function HomePage() {
   return (
-    <div className="w-full min-h-screen bg-[#fafafa] py-4">
+    <div className="w-full py-4">
       <PostFeed />
     </div>
   );

@@ -69,7 +69,7 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 - [x] Clerk 인증 연동 (한국어 설정)
 - [x] Supabase 프로젝트 생성 및 연동
 - [x] Supabase 클라이언트 설정 (4가지 타입 모두 구현)
-- [ ] **⚠️ Supabase Dashboard에서 `sns_schema.sql` 마이그레이션 실행 필요**
+- [x] **Supabase Dashboard에서 `sns_schema.sql` 마이그레이션 실행 확인 완료**
 
 #### 1-2. 레이아웃 구조 ✅
 - [x] Sidebar 컴포넌트 생성 (`components/layout/Sidebar.tsx`)
@@ -174,10 +174,12 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 이미지 파일 업로드 (Supabase Storage)
   - [x] 파일 검증 (최대 5MB, 이미지 형식만)
   - [x] 게시물 데이터 저장 (posts 테이블)
-  - [x] 성공 시 피드 리프레시 (페이지 새로고침)
+  - [x] 성공 시 피드 리프레시 (이벤트 기반 자동 새로고침)
 - [x] CreatePostModal에서 실제 API 호출 구현
   - [x] FormData로 이미지 및 캡션 전송
-  - [x] 에러 처리 및 사용자 피드백
+  - [x] 에러 처리 및 사용자 피드백 개선 (네트워크/서버 에러 구분, 인라인 메시지)
+  - [x] 업로드 진행률 표시 (Progress Bar)
+  - [x] 업로드 후 피드 자동 새로고침 (이벤트 기반)
 
 #### 2-3. 댓글 기능 - UI & 작성 ✅
 - [x] 댓글 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
@@ -253,7 +255,7 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 통계: 게시물 수, 팔로워 수, 팔로잉 수
   - [x] "팔로우" 또는 "팔로잉" 버튼 (다른 사람 프로필)
   - [x] "프로필 편집" 버튼 (본인 프로필, 1차 제외)
-  - [ ] Bio 표시 (profile.md 참고)
+  - [x] Bio 표시 (사용자 소개)
 - [x] `/api/users/[userId]` GET API 생성 (`app/api/users/[userId]/route.ts`)
   - [x] 사용자 정보 조회
   - [x] 통계 정보 포함 (user_stats 뷰 활용)
@@ -284,33 +286,64 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 
 📄 **상세 TODO**: [ui-polish.md](./ui-polish/ui-polish.md)
 
-##### 3-4-1. 반응형 디자인 세부사항
-- [ ] 모바일 반응형 테스트
-  - [ ] < 768px: BottomNav, MobileHeader
-- [ ] 태블릿 반응형 테스트
-  - [ ] 768px ~ 1024px: Icon-only Sidebar
-- [ ] Desktop 반응형 테스트
-  - [ ] 1024px+: Full Sidebar
-- [ ] 메인 피드 최대 너비 630px 중앙 정렬 확인
-- [ ] 배경색 확인 (#FAFAFA 전체, #FFFFFF 카드)
-- [ ] Desktop Sidebar 너비 244px 확인
-- [ ] Tablet Sidebar 너비 72px 확인
-- [ ] Mobile Header 높이 60px 확인
-- [ ] Mobile BottomNav 높이 50px 확인
-- [ ] 프로필 이미지 크기 반응형 (150px Desktop / 90px Mobile)
+##### 3-4-1. 반응형 디자인 세부사항 ✅
+- [x] 모바일 반응형 테스트
+  - [x] < 768px: BottomNav, MobileHeader
+- [x] 태블릿 반응형 테스트
+  - [x] 768px ~ 1024px: Icon-only Sidebar
+- [x] Desktop 반응형 테스트
+  - [x] 1024px+: Full Sidebar
+- [x] 메인 피드 최대 너비 630px 중앙 정렬 확인
+- [x] 배경색 확인 (#FAFAFA 전체, #FFFFFF 카드)
+- [x] Desktop Sidebar 너비 244px 확인
+- [x] Tablet Sidebar 너비 72px 확인
+- [x] Mobile Header 높이 60px 확인
+- [x] Mobile BottomNav 높이 50px 확인
+- [x] 프로필 이미지 크기 반응형 (150px Desktop / 90px Mobile)
 
-##### 3-4-2. 타이포그래피 & 컬러 스키마
-- [ ] 폰트 패밀리 확인 (-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto)
-- [ ] 텍스트 크기 확인 (12px, 14px, 16px, 20px)
-- [ ] 폰트 굵기 확인 (400, 600, 700)
-- [ ] Instagram 컬러 스키마 확인 (#0095f6, #fafafa, #ffffff, #dbdbdb, #262626, #8e8e8e, #ed4956)
+##### 3-4-2. 타이포그래피 & 컬러 스키마 ✅
+- [x] 폰트 패밀리 확인 (-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto)
+  - [x] globals.css에 시스템 폰트 스택 설정 완료
+- [x] 텍스트 크기 확인 (12px, 14px, 16px, 20px)
+  - [x] text-xs (12px): 시간 표시에 사용
+  - [x] text-sm (14px): 기본 텍스트, 댓글에 사용
+  - [x] text-base (16px): 입력창, 사이드바에 사용
+  - [x] text-xl (20px): 프로필 헤더에 사용
+- [x] 폰트 굵기 확인 (400, 600, 700)
+  - [x] font-normal (400): 기본 텍스트
+  - [x] font-semibold (600): 강조 텍스트, 버튼에 사용
+  - [x] font-bold (700): 제목, 로고에 사용
+- [x] Instagram 컬러 스키마 확인 (#0095f6, #fafafa, #ffffff, #dbdbdb, #262626, #8e8e8e, #ed4956)
+  - [x] #0095f6 (Instagram Blue): 버튼, 링크에 사용
+  - [x] #fafafa (Background): 전체 배경에 사용
+  - [x] #ffffff (Card Background): 카드 배경에 사용
+  - [x] #dbdbdb (Border): 테두리에 사용
+  - [x] #262626 (Text Primary): 본문 텍스트에 사용
+  - [x] #8e8e8e (Text Secondary): 보조 텍스트에 사용
+  - [x] #ed4956 (Like): 좋아요 하트에 사용
+  - [x] CSS 변수로 정의 완료 (globals.css)
 
-##### 3-4-3. 애니메이션 & 인터랙션 개선
-- [ ] 모달 열기/닫기 애니메이션 (fade in/out)
-- [ ] 모달 닫기 개선 (ESC 키, 배경 클릭)
-- [ ] Skeleton UI Shimmer 효과 최적화
-- [ ] 버튼 Hover 효과 일관성 확인
-- [ ] 로딩 상태 전환 애니메이션
+##### 3-4-3. 애니메이션 & 인터랙션 개선 ✅
+- [x] 모달 열기/닫기 애니메이션 (fade in/out)
+  - [x] Dialog 컴포넌트에 fade-in/out 애니메이션 적용 (duration-300 ease-out)
+  - [x] Overlay에 backdrop-blur-sm 효과 추가
+  - [x] 부드러운 전환 효과 구현
+- [x] 모달 닫기 개선 (ESC 키, 배경 클릭)
+  - [x] ESC 키로 모달 닫기 (Radix UI 기본 기능 활용)
+  - [x] 배경 클릭으로 모달 닫기 (onPointerDownOutside 활용)
+  - [x] 명시적으로 핸들러 추가하여 일관성 확보
+- [x] Skeleton UI Shimmer 효과 최적화
+  - [x] Shimmer 애니메이션 속도 최적화 (2s → 1.5s)
+  - [x] Shimmer 효과 강도 개선 (via-white/20 → via-white/30)
+  - [x] Skeleton에 fade-in 애니메이션 추가
+- [x] 버튼 Hover 효과 일관성 확인
+  - [x] Button 컴포넌트에 transition-all 적용 확인
+  - [x] 모든 버튼에 일관된 hover 효과 적용
+  - [x] CSS 유틸리티 클래스 추가 (.btn-hover)
+- [x] 로딩 상태 전환 애니메이션
+  - [x] 초기 로딩 시 fade-in 애니메이션 적용
+  - [x] 무한 스크롤 로딩 시 slide-up 애니메이션 적용
+  - [x] 전환 애니메이션 keyframes 정의 (fadeIn, slideUp)
 
 ##### 3-4-4. 에러 핸들링 & UI 개선
 - [ ] API 에러 처리

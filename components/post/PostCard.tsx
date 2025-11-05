@@ -231,7 +231,8 @@ export function PostCard({ post, currentUserId, onDelete }: PostCardProps) {
   }, [isSignedIn, post.id, isDeleting, onDelete]);
 
   return (
-    <article className="bg-white border border-[#dbdbdb] rounded-lg mb-4">
+    <>
+      <article className="bg-white border border-[#dbdbdb] rounded-lg mb-4">
       {/* 헤더 (60px) */}
       <header className="h-[60px] flex items-center justify-between px-4 border-b border-[#dbdbdb]">
         <div className="flex items-center gap-3">

@@ -39,8 +39,23 @@ export async function GET(
       .eq("user_id", userId)
       .single();
 
-    if (statsError || !userStats) {
-      console.error("User stats error:", statsError);
+    if (statsError) {
+      console.error("User stats error:", {
+        error: statsError,
+        code: statsError.code,
+        message: statsError.message,
+        details: statsError.details,
+        hint: statsError.hint,
+        userId,
+      });
+      return NextResponse.json(
+        { error: "사용자 통계를 불러올 수 없습니다.", details: statsError.message },
+        { status: 500 }
+      );
+    }
+
+    if (!userStats) {
+      console.error("User stats not found:", userId);
       return NextResponse.json(
         { error: "사용자를 찾을 수 없습니다." },
         { status: 404 }
@@ -50,15 +65,30 @@ export async function GET(
     // users 테이블에서 추가 정보 가져오기
     const { data: userData, error: userError } = await supabase
       .from("users")
-      .select("id, clerk_id, name, created_at")
+      .select("id, clerk_id, name, bio, created_at")
       .eq("id", userId)
       .single();
 
-    if (userError || !userData) {
-      console.error("User data error:", userError);
+    if (userError) {
+      console.error("User data error:", {
+        error: userError,
+        code: userError.code,
+        message: userError.message,
+        details: userError.details,
+        hint: userError.hint,
+        userId,
+      });
       return NextResponse.json(
-        { error: "사용자 정보를 불러올 수 없습니다." },
+        { error: "사용자 정보를 불러올 수 없습니다.", details: userError.message },
         { status: 500 }
+      );
+    }
+
+    if (!userData) {
+      console.error("User data not found:", userId);
+      return NextResponse.json(
+        { error: "사용자 정보를 찾을 수 없습니다." },
+        { status: 404 }
       );
     }
 
@@ -96,6 +126,7 @@ export async function GET(
         id: userData.id,
         clerk_id: userData.clerk_id,
         name: userData.name,
+        bio: userData.bio || null,
         created_at: userData.created_at,
         posts_count: userStats.posts_count || 0,
         followers_count: userStats.followers_count || 0,
