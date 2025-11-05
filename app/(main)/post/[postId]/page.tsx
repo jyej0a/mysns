@@ -14,7 +14,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ArrowLeft } from "lucide-react";
@@ -22,6 +22,21 @@ import { useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { CommentList } from "@/components/comment/CommentList";
 import { CommentForm } from "@/components/comment/CommentForm";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface Post {
   id: string;
@@ -52,6 +67,7 @@ export default function PostDetailPage() {
   const params = useParams();
   const postId = params.postId as string;
   const { isSignedIn } = useAuth();
+  const router = useRouter();
 
   const [post, setPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +77,8 @@ export default function PostDetailPage() {
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [isCommentLoading, setIsCommentLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 게시물 데이터 로딩
   const loadPost = useCallback(async () => {
@@ -193,6 +211,34 @@ export default function PostDetailPage() {
     }
   }, [isSignedIn, loadPost]);
 
+  // 게시물 삭제 핸들러
+  const handlePostDelete = useCallback(async () => {
+    if (!isSignedIn || !postId || isDeleting) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/posts/${postId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "게시물 삭제에 실패했습니다.");
+      }
+
+      // 삭제 성공 시 홈으로 리다이렉트
+      setDeleteDialogOpen(false);
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+      alert(error instanceof Error ? error.message : "게시물 삭제에 실패했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [isSignedIn, postId, isDeleting, router]);
+
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -262,9 +308,28 @@ export default function PostDetailPage() {
               </span>
             </div>
           </div>
-          <button className="text-[#262626] hover:opacity-70">
-            <MoreHorizontal className="w-5 h-5" />
-          </button>
+          {/* 본인 게시물일 때만 삭제 메뉴 표시 */}
+          {currentUserId && post.user.id === currentUserId ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="text-[#262626] hover:opacity-70">
+                  <MoreHorizontal className="w-5 h-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  삭제
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <button className="text-[#262626] hover:opacity-70">
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+          )}
         </header>
 
         {/* 이미지 영역 (1:1 정사각형) */}
@@ -367,6 +432,34 @@ export default function PostDetailPage() {
           isLoading={isCommentLoading}
         />
       </article>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>게시물 삭제</DialogTitle>
+            <DialogDescription>
+              정말 이 게시물을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handlePostDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "삭제 중..." : "삭제"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

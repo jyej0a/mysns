@@ -183,6 +183,7 @@ export async function GET(request: NextRequest) {
         offset,
         hasMore: postsWithDetails.length === limit,
       },
+      currentUserId: currentUserId, // 현재 사용자 ID 반환 (게시물 삭제 기능용)
     });
   } catch (error) {
     console.error("API error:", error);

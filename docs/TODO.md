@@ -95,7 +95,7 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 컨텐츠: 좋아요 수, 캡션(100자 초과 시 "... 더 보기" 버튼 표시), 댓글 미리보기(최신 2개)
   - [x] 댓글 "모두 보기" 링크 (게시물 상세 페이지로 이동)
   - [x] 클릭 시 게시물 상세 페이지로 이동 (모바일)
-  - [ ] 캡션 "... 더 보기" 클릭 시 전체 캡션 표시 기능 (home.md 참고)
+  - [x] 캡션 "... 더 보기" 클릭 시 전체 캡션 표시 기능 (접기 기능 포함)
 - [x] PostCardSkeleton 컴포넌트 생성 (`components/post/PostCardSkeleton.tsx`)
   - [x] 로딩 UI (회색 박스 + Shimmer 효과)
 - [x] PostFeed 컴포넌트 생성 (`components/post/PostFeed.tsx`)
@@ -219,22 +219,22 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 좋아요 기능 (PostCard와 동일한 로직)
   - [x] 댓글 삭제 기능
 
-#### 2-5. 게시물 삭제 기능
+#### 2-5. 게시물 삭제 기능 ✅
 
 📄 **상세 TODO**: [post-delete.md](./post-delete/post-delete.md)
 
-- [ ] `/api/posts/[postId]` DELETE API 생성
-  - [ ] Clerk 인증 확인
-  - [ ] 본인 게시물인지 권한 검증
-  - [ ] 게시물 삭제
-  - [ ] 관련 데이터 삭제 (좋아요, 댓글 - CASCADE 또는 수동)
-  - [ ] Supabase Storage에서 이미지 파일 삭제
-- [ ] 게시물 삭제 UI
-  - [ ] PostCard 헤더에 ⋯ 메뉴 클릭 시 삭제 옵션 표시 (본인 게시물만)
-  - [ ] PostModal 헤더에 ⋯ 메뉴 클릭 시 삭제 옵션 표시 (본인 게시물만)
-  - [ ] 삭제 확인 다이얼로그 (Dialog 컴포넌트 사용)
-  - [ ] 삭제 후 피드에서 자동 제거 또는 새로고침
-  - [ ] 삭제 후 모달/페이지 닫기 (상세 보기 중인 경우)
+- [x] `/api/posts/[postId]` DELETE API 생성
+  - [x] Clerk 인증 확인
+  - [x] 본인 게시물인지 권한 검증
+  - [x] 게시물 삭제
+  - [x] 관련 데이터 삭제 (좋아요, 댓글 - CASCADE로 자동 삭제)
+  - [x] Supabase Storage에서 이미지 파일 삭제
+- [x] 게시물 삭제 UI
+  - [x] PostCard 헤더에 ⋯ 메뉴 클릭 시 삭제 옵션 표시 (본인 게시물만)
+  - [x] PostModal 헤더에 ⋯ 메뉴 클릭 시 삭제 옵션 표시 (본인 게시물만)
+  - [x] 삭제 확인 다이얼로그 (Dialog 컴포넌트 사용)
+  - [x] 삭제 후 피드에서 자동 제거 (PostFeed에서 optimistic update)
+  - [x] 삭제 후 모달/페이지 닫기 (상세 보기 중인 경우)
 
 ---
 
@@ -376,6 +376,19 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 3. **게시물 작성** → 콘텐츠 생성
 4. **댓글 & 좋아요** → 상호작용
 5. **프로필 & 팔로우** → 소셜 기능
+
+---
+
+## 📚 상세 TODO 파일 링크 확인
+
+다음 상세 TODO 파일들이 메인 TODO.md에 링크로 반영되어 있습니다:
+
+- [x] [home.md](./home/home.md) - 홈 피드 페이지 (라인 64)
+- [x] [create-post.md](./create-post/create-post.md) - 게시물 작성 기능 (라인 157)
+- [x] [post-detail.md](./post-detail/post-detail.md) - 게시물 상세 페이지 (라인 157)
+- [x] [post-delete.md](./post-delete/post-delete.md) - 게시물 삭제 기능 (라인 224)
+- [x] [profile.md](./profile/profile.md) - 프로필 페이지 & 팔로우 기능 (라인 243)
+- [x] [ui-polish.md](./ui-polish/ui-polish.md) - UI/UX 개선 & 디자인 시스템 (라인 285)
 
 ---
 

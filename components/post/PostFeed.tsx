@@ -11,9 +11,11 @@
  * - components/post/PostCard
  * - components/post/PostCardSkeleton
  * - react: useEffect, useState, useRef, useCallback
+ * - @clerk/nextjs: useAuth
  */
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { PostCard } from "./PostCard";
 import { PostCardSkeleton } from "./PostCardSkeleton";
 
@@ -45,12 +47,14 @@ interface PostFeedProps {
 }
 
 export function PostFeed({ initialPosts = [] }: PostFeedProps) {
+  const { userId: clerkUserId } = useAuth();
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [loading, setLoading] = useState(!initialPosts.length);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasError, setHasError] = useState(false); // 에러 발생 시 재시도 방지
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const LIMIT = 10;
@@ -74,11 +78,25 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "게시물을 불러오는데 실패했습니다.");
+        // 네트워크 에러와 서버 에러 구분
+        if (response.status === 500) {
+          throw new Error("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        } else if (response.status === 404) {
+          throw new Error("게시물을 찾을 수 없습니다.");
+        } else if (response.status >= 400 && response.status < 500) {
+          throw new Error(errorData.error || "요청을 처리할 수 없습니다.");
+        } else {
+          throw new Error(errorData.error || "게시물을 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요.");
+        }
       }
 
       const data = await response.json();
       const newPosts = data.posts || [];
+      
+      // 현재 사용자 ID 설정 (첫 로드 시 또는 업데이트)
+      if (data.currentUserId !== undefined) {
+        setCurrentUserId(data.currentUserId);
+      }
       
       if (append) {
         setPosts((prev) => [...prev, ...newPosts]);
@@ -160,14 +178,17 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
   if (error) {
     return (
       <div className="bg-white border border-[#dbdbdb] rounded-lg p-8 text-center space-y-4">
-        <p className="text-[#8e8e8e]">{error}</p>
+        <div className="space-y-2">
+          <p className="text-[#262626] font-semibold">오류가 발생했습니다</p>
+          <p className="text-sm text-[#8e8e8e]">{error}</p>
+        </div>
         <button
           onClick={() => {
             setHasError(false);
             setError(null);
             fetchPosts(0, false);
           }}
-          className="px-4 py-2 bg-[#0095f6] text-white rounded-lg hover:bg-[#0085e5] transition-colors"
+          className="px-4 py-2 bg-[#0095f6] text-white rounded-lg hover:bg-[#0085e5] transition-colors font-semibold"
         >
           다시 시도
         </button>
@@ -183,10 +204,20 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
     );
   }
 
+  // 게시물 삭제 핸들러
+  const handlePostDelete = useCallback((postId: string) => {
+    setPosts((prev) => prev.filter((post) => post.id !== postId));
+  }, []);
+
   return (
     <div className="space-y-4">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostCard
+          key={post.id}
+          post={post}
+          currentUserId={currentUserId}
+          onDelete={handlePostDelete}
+        />
       ))}
       
       {/* 무한 스크롤 트리거 요소 */}

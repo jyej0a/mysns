@@ -25,6 +25,21 @@ import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-rea
 import { useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { usePostModal } from "@/components/providers/post-modal-provider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface PostCardProps {
   post: {
@@ -49,9 +64,11 @@ interface PostCardProps {
       };
     }>;
   };
+  currentUserId?: string | null;
+  onDelete?: (postId: string) => void;
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, currentUserId, onDelete }: PostCardProps) {
   const { isSignedIn } = useAuth();
   const { openModal } = usePostModal();
   
@@ -61,9 +78,15 @@ export function PostCard({ post }: PostCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showFullCaption, setShowFullCaption] = useState(false);
   
   // 더블탭 감지를 위한 타이머
   const tapTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 본인 게시물 여부 확인
+  const isOwnPost = currentUserId && post.user.id === currentUserId;
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -135,6 +158,8 @@ export function PostCard({ post }: PostCardProps) {
       setIsLiked(previousIsLiked);
       setLikesCount(previousLikesCount);
       console.error("Like toggle error:", error);
+      // 사용자에게 에러 알림 (필요시 Toast 추가 가능)
+      // 현재는 console.error만 사용
     } finally {
       setIsLoading(false);
     }
@@ -168,6 +193,43 @@ export function PostCard({ post }: PostCardProps) {
     }
   }, [isLiked, isSignedIn, isLoading, handleLikeToggle]);
 
+  // 게시물 삭제 핸들러
+  const handlePostDelete = useCallback(async () => {
+    if (!isSignedIn || !post.id || isDeleting) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "게시물 삭제에 실패했습니다.");
+      }
+
+      // 삭제 성공 시 다이얼로그 닫기 및 부모 컴포넌트에 알림
+      setDeleteDialogOpen(false);
+      if (onDelete) {
+        onDelete(post.id);
+      } else {
+        // onDelete가 없으면 페이지 새로고침
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+      // 사용자 친화적인 에러 메시지
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "게시물 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.";
+      alert(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [isSignedIn, post.id, isDeleting, onDelete]);
+
   return (
     <article className="bg-white border border-[#dbdbdb] rounded-lg mb-4">
       {/* 헤더 (60px) */}
@@ -191,9 +253,28 @@ export function PostCard({ post }: PostCardProps) {
             </span>
           </div>
         </div>
-        <button className="text-[#262626] hover:opacity-70">
-          <MoreHorizontal className="w-5 h-5" />
-        </button>
+        {/* 본인 게시물일 때만 삭제 메뉴 표시 */}
+        {isOwnPost ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="text-[#262626] hover:opacity-70">
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                삭제
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <button className="text-[#262626] hover:opacity-70">
+            <MoreHorizontal className="w-5 h-5" />
+          </button>
+        )}
       </header>
 
       {/* 이미지 영역 (1:1 정사각형) */}
@@ -302,10 +383,27 @@ export function PostCard({ post }: PostCardProps) {
             </Link>
             <span className="ml-2">
               {post.caption.length > 100 ? (
-                <>
-                  {post.caption.substring(0, 100)}
-                  <button className="text-[#8e8e8e] ml-1">... 더 보기</button>
-                </>
+                showFullCaption ? (
+                  <>
+                    {post.caption}{" "}
+                    <button
+                      onClick={() => setShowFullCaption(false)}
+                      className="text-[#8e8e8e] hover:opacity-70"
+                    >
+                      ... 접기
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {post.caption.substring(0, 100)}
+                    <button
+                      onClick={() => setShowFullCaption(true)}
+                      className="text-[#8e8e8e] hover:opacity-70"
+                    >
+                      ... 더 보기
+                    </button>
+                  </>
+                )
               ) : (
                 post.caption
               )}
@@ -337,8 +435,37 @@ export function PostCard({ post }: PostCardProps) {
             ))}
           </div>
         )}
-      </div>
-    </article>
+        </div>
+      </article>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>게시물 삭제</DialogTitle>
+            <DialogDescription>
+              정말 이 게시물을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handlePostDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "삭제 중..." : "삭제"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
