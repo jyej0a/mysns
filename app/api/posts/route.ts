@@ -18,11 +18,11 @@ import { getServiceRoleClient } from "@/lib/supabase/service-role";
 export async function GET(request: NextRequest) {
   try {
     console.group("[API] GET /api/posts 시작");
-    
+
     // 환경 변수 확인
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
+
     if (!supabaseUrl || !supabaseKey) {
       console.error("환경 변수 누락:", {
         hasUrl: !!supabaseUrl,
@@ -277,12 +277,12 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(7);
     const fileName = `${timestamp}-${randomString}.${fileExt}`;
-    
+
     // Storage 경로: {clerk_user_id}/posts/{filename}
     const filePath = `${clerkUserId}/posts/${fileName}`;
 
     // Supabase Storage에 이미지 업로드
-    const { data: uploadData, error: uploadError } = await serviceRoleSupabase.storage
+    const { error: uploadError } = await serviceRoleSupabase.storage
       .from("uploads")
       .upload(filePath, imageFile, {
         cacheControl: "3600",
@@ -326,7 +326,7 @@ export async function POST(request: NextRequest) {
       await serviceRoleSupabase.storage
         .from("uploads")
         .remove([filePath]);
-      
+
       return NextResponse.json(
         { error: "게시물 저장에 실패했습니다." },
         { status: 500 }

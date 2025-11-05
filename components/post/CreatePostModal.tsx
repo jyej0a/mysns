@@ -157,7 +157,7 @@ export function CreatePostModal({
         throw new Error(error.message);
       }
 
-      const data = await response.json();
+      await response.json();
 
       // 성공 시 모달 닫기 및 상태 초기화
       handleClose();
@@ -165,7 +165,7 @@ export function CreatePostModal({
 
       // 피드 새로고침 이벤트 발생 (PostFeed가 자동으로 새 게시물을 불러옴)
       window.dispatchEvent(new CustomEvent("postCreated"));
-      
+
       // 페이지 새로고침은 더 이상 필요하지 않지만, 혹시 모를 경우를 대비해 유지
       // window.location.reload();
     } catch (err) {

@@ -106,10 +106,10 @@ export function PostModal({ open, onOpenChange, postId }: PostModalProps) {
       setPost(data.post);
       setIsLiked(data.post.is_liked || false);
       setLikesCount(data.post.likes_count || 0);
-      
+
       // API에서 현재 사용자 ID 받아오기 (댓글 삭제 기능용)
       setCurrentUserId(data.currentUserId || null);
-      
+
       // 이미지 로딩 상태 초기화
       setImageLoading(true);
     } catch (err) {
@@ -267,6 +267,24 @@ export function PostModal({ open, onOpenChange, postId }: PostModalProps) {
     }
   }, [isSignedIn, loadPost]);
 
+  // 모달 닫기 핸들러 (URL 파라미터 동기화 포함)
+  const handleOpenChange = useCallback((newOpen: boolean) => {
+    if (!newOpen) {
+      // URL에서 postId 제거
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("postId");
+      const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
+      router.replace(newUrl, { scroll: false });
+    }
+    onOpenChange(newOpen);
+  }, [onOpenChange, router, searchParams]);
+
+  // 배경 클릭으로 모달 닫기 핸들러
+  const handlePointerDownOutside = useCallback((e: Event) => {
+    // 배경 클릭 시 모달 닫기
+    handleOpenChange(false);
+  }, [handleOpenChange]);
+
   // 게시물 삭제 핸들러
   const handlePostDelete = useCallback(async () => {
     if (!isSignedIn || !postId || isDeleting) {
@@ -298,7 +316,7 @@ export function PostModal({ open, onOpenChange, postId }: PostModalProps) {
     } finally {
       setIsDeleting(false);
     }
-  }, [isSignedIn, postId, isDeleting, onOpenChange]);
+  }, [isSignedIn, postId, isDeleting, onOpenChange, router, searchParams]);
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -320,7 +338,7 @@ export function PostModal({ open, onOpenChange, postId }: PostModalProps) {
 
   if (isLoading) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-6xl w-[90vw] h-[90vh] p-0 gap-0 flex flex-row overflow-hidden bg-white border-none rounded-none">
           {/* 이미지 스켈레톤 */}
           <div className="flex-1 bg-gray-200 relative overflow-hidden">
@@ -361,7 +379,7 @@ export function PostModal({ open, onOpenChange, postId }: PostModalProps) {
 
   if (!post || error) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-6xl w-[90vw] h-[90vh] p-0 gap-0 flex flex-row overflow-hidden bg-white border-none rounded-none">
           <div className="flex-1 bg-white flex items-center justify-center">
             <div className="text-center space-y-4 px-8">
@@ -387,27 +405,9 @@ export function PostModal({ open, onOpenChange, postId }: PostModalProps) {
     );
   }
 
-  // 모달 닫기 핸들러 (URL 파라미터 동기화 포함)
-  const handleOpenChange = useCallback((newOpen: boolean) => {
-    if (!newOpen) {
-      // URL에서 postId 제거
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("postId");
-      const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
-      router.replace(newUrl, { scroll: false });
-    }
-    onOpenChange(newOpen);
-  }, [onOpenChange, router, searchParams]);
-
-  // 배경 클릭으로 모달 닫기 핸들러
-  const handlePointerDownOutside = useCallback((e: Event) => {
-    // 배경 클릭 시 모달 닫기
-    handleOpenChange(false);
-  }, [handleOpenChange]);
-
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent 
+      <DialogContent
         className="max-w-6xl w-[90vw] h-[90vh] p-0 gap-0 flex flex-row overflow-hidden bg-white border-none rounded-none [&>button]:hidden"
         onPointerDownOutside={handlePointerDownOutside}
         onEscapeKeyDown={(e) => {
@@ -423,7 +423,7 @@ export function PostModal({ open, onOpenChange, postId }: PostModalProps) {
         >
           <X className="w-5 h-5 text-white" aria-hidden="true" />
         </button>
-        
+
         {/* 이미지 영역 (50%) */}
         <div className="flex-1 bg-black flex items-center justify-center relative">
           {imageLoading && (

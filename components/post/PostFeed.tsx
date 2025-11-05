@@ -48,7 +48,6 @@ interface PostFeedProps {
 }
 
 export function PostFeed({ initialPosts = [] }: PostFeedProps) {
-  const { userId: clerkUserId } = useAuth();
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [loading, setLoading] = useState(!initialPosts.length);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +75,7 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
       }
 
       const response = await fetch(`/api/posts?limit=${LIMIT}&offset=${offset}`);
-      
+
       if (!response.ok) {
         const error = await extractApiError(response);
         throw new Error(error.message);
@@ -84,12 +83,12 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
 
       const data = await response.json();
       const newPosts = data.posts || [];
-      
+
       // 현재 사용자 ID 설정 (첫 로드 시 또는 업데이트)
       if (data.currentUserId !== undefined) {
         setCurrentUserId(data.currentUserId);
       }
-      
+
       if (append) {
         setPosts((prev) => [...prev, ...newPosts]);
       } else {
@@ -225,7 +224,7 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
           onDelete={handlePostDelete}
         />
       ))}
-      
+
       {/* 무한 스크롤 트리거 요소 */}
       {hasMore && (
         <div ref={observerTarget} className="py-4">

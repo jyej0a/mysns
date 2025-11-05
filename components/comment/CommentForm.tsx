@@ -23,7 +23,7 @@ interface CommentFormProps {
   isLoading?: boolean;
 }
 
-export function CommentForm({ postId, onSubmit, isLoading = false }: CommentFormProps) {
+export function CommentForm({ postId: _postId, onSubmit, isLoading = false }: CommentFormProps) {
   const { isSignedIn } = useAuth();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,12 +88,12 @@ export function CommentForm({ postId, onSubmit, isLoading = false }: CommentForm
             "text-sm font-semibold text-[#0095f6] transition-opacity",
             "focus-visible:outline-2 focus-visible:outline-[#0095f6] focus-visible:outline-offset-2 rounded px-2",
             (!isSignedIn || !content.trim() || isSubmitting || isLoading) &&
-              "opacity-50 cursor-not-allowed",
+            "opacity-50 cursor-not-allowed",
             isSignedIn &&
-              content.trim() &&
-              !isSubmitting &&
-              !isLoading &&
-              "hover:opacity-70"
+            content.trim() &&
+            !isSubmitting &&
+            !isLoading &&
+            "hover:opacity-70"
           )}
         >
           게시

@@ -8,12 +8,12 @@
  *
  * @dependencies
  * - components/ui/dialog: Dialog 컴포넌트
- * - react: useState, useEffect
+ * - react: useState, useEffect, useCallback
  * - next/image: Image
  * - next/link: Link
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -50,17 +50,7 @@ export function FollowListModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && userId) {
-      fetchUsers();
-    } else {
-      // 모달이 닫히면 데이터 초기화
-      setUsers([]);
-      setError(null);
-    }
-  }, [open, userId, type]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -83,7 +73,17 @@ export function FollowListModal({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, type]);
+
+  useEffect(() => {
+    if (open && userId) {
+      fetchUsers();
+    } else {
+      // 모달이 닫히면 데이터 초기화
+      setUsers([]);
+      setError(null);
+    }
+  }, [open, userId, type, fetchUsers]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -84,7 +84,7 @@ export async function POST(
     // 사용자 ID 가져오기 및 권한 검증
     const { data: userData, error: userError } = await serviceRoleSupabase
       .from("users")
-      .select("id, clerk_id")
+      .select("id, clerk_id, profile_image_url")
       .eq("id", userId)
       .single();
 
@@ -126,7 +126,7 @@ export async function POST(
 
     // Supabase Storage에 이미지 업로드
     console.log("📤 Storage에 이미지 업로드 중...", filePath);
-    const { data: uploadData, error: uploadError } = await serviceRoleSupabase.storage
+    const { error: uploadError } = await serviceRoleSupabase.storage
       .from("uploads")
       .upload(filePath, imageFile, {
         cacheControl: "3600",
