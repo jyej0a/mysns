@@ -61,6 +61,8 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 
 ### 1. 홈 피드 페이지
 
+📄 **상세 TODO**: [home.md](./home/home.md)
+
 #### 1-1. 기본 세팅 ✅
 - [x] Next.js + TypeScript 프로젝트 생성
 - [x] Tailwind CSS 설정 (인스타 컬러 스키마)
@@ -90,15 +92,17 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 헤더: 프로필 이미지(32px), 사용자명, 시간, ⋯ 메뉴
   - [x] 이미지 영역: 1:1 정사각형
   - [x] 액션 버튼: 좋아요, 댓글, 공유(UI만), 북마크(UI만)
-  - [x] 컨텐츠: 좋아요 수, 캡션(100자 초과 시 "... 더 보기"), 댓글 미리보기(최신 2개)
+  - [x] 컨텐츠: 좋아요 수, 캡션(100자 초과 시 "... 더 보기" 버튼 표시), 댓글 미리보기(최신 2개)
+  - [x] 댓글 "모두 보기" 링크 (게시물 상세 페이지로 이동)
   - [x] 클릭 시 게시물 상세 페이지로 이동 (모바일)
+  - [ ] 캡션 "... 더 보기" 클릭 시 전체 캡션 표시 기능 (home.md 참고)
 - [x] PostCardSkeleton 컴포넌트 생성 (`components/post/PostCardSkeleton.tsx`)
   - [x] 로딩 UI (회색 박스 + Shimmer 효과)
 - [x] PostFeed 컴포넌트 생성 (`components/post/PostFeed.tsx`)
   - [x] 게시물 목록 표시
   - [x] 로딩 상태 처리
   - [x] 에러 처리
-  - [ ] 무한 스크롤 구현 (1-4에서 구현 예정)
+  - [x] 무한 스크롤 구현 (2-4에서 구현 완료)
 - [x] `/api/posts` GET API 생성 (`app/api/posts/route.ts`)
   - [x] 페이지네이션 (10개씩, limit/offset 파라미터)
   - [x] 시간 역순 정렬
@@ -108,9 +112,9 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 특정 사용자 필터링 (userId 쿼리 파라미터)
 - [x] 게시물 상세 페이지 라우트 생성 (`app/(main)/post/[postId]/page.tsx`)
   - [x] 기본 라우트 구조 생성
-  - [ ] Desktop: 모달로 표시 (1-5에서 구현 예정)
-  - [ ] Mobile: 전체 페이지로 표시 (2-4에서 구현 예정)
-  - [ ] 게시물 상세 정보 표시 (2-4에서 구현 예정)
+  - [x] Desktop: 모달로 표시 (1-5에서 구현 완료)
+  - [x] Mobile: 전체 페이지로 표시 (2-4에서 구현 완료)
+  - [x] 게시물 상세 정보 표시 (2-4에서 구현 완료)
 
 #### 1-4. 홈 피드 - 좋아요 기능 ✅
 - [x] 좋아요 테이블 확인 (이미 `sns_schema.sql`에 포함됨)
@@ -149,6 +153,8 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
 ---
 
 ### 2. 게시물 작성 & 댓글 기능
+
+📄 **상세 TODO**: [create-post.md](./create-post/create-post.md), [post-detail.md](./post-detail/post-detail.md)
 
 #### 2-1. 게시물 작성 모달 ✅
 - [x] CreatePostModal 컴포넌트 생성 (`components/post/CreatePostModal.tsx`)
@@ -213,9 +219,28 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 좋아요 기능 (PostCard와 동일한 로직)
   - [x] 댓글 삭제 기능
 
+#### 2-5. 게시물 삭제 기능
+
+📄 **상세 TODO**: [post-delete.md](./post-delete/post-delete.md)
+
+- [ ] `/api/posts/[postId]` DELETE API 생성
+  - [ ] Clerk 인증 확인
+  - [ ] 본인 게시물인지 권한 검증
+  - [ ] 게시물 삭제
+  - [ ] 관련 데이터 삭제 (좋아요, 댓글 - CASCADE 또는 수동)
+  - [ ] Supabase Storage에서 이미지 파일 삭제
+- [ ] 게시물 삭제 UI
+  - [ ] PostCard 헤더에 ⋯ 메뉴 클릭 시 삭제 옵션 표시 (본인 게시물만)
+  - [ ] PostModal 헤더에 ⋯ 메뉴 클릭 시 삭제 옵션 표시 (본인 게시물만)
+  - [ ] 삭제 확인 다이얼로그 (Dialog 컴포넌트 사용)
+  - [ ] 삭제 후 피드에서 자동 제거 또는 새로고침
+  - [ ] 삭제 후 모달/페이지 닫기 (상세 보기 중인 경우)
+
 ---
 
 ### 3. 프로필 페이지 & 팔로우 기능 ✅
+
+📄 **상세 TODO**: [profile.md](./profile/profile.md)
 
 #### 3-1. 프로필 페이지 - 기본 정보 ✅
 - [x] 프로필 페이지 라우트 그룹 설정 확인
@@ -228,6 +253,7 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 통계: 게시물 수, 팔로워 수, 팔로잉 수
   - [x] "팔로우" 또는 "팔로잉" 버튼 (다른 사람 프로필)
   - [x] "프로필 편집" 버튼 (본인 프로필, 1차 제외)
+  - [ ] Bio 표시 (profile.md 참고)
 - [x] `/api/users/[userId]` GET API 생성 (`app/api/users/[userId]/route.ts`)
   - [x] 사용자 정보 조회
   - [x] 통계 정보 포함 (user_stats 뷰 활용)
@@ -255,18 +281,50 @@ Instagram 클론 SNS 프로젝트 개발 진행 상황 체크리스트
   - [x] 클릭 시 즉시 API 호출 및 UI 업데이트 (optimistic update 적용)
 
 #### 3-4. 최종 마무리 & 배포
+
+📄 **상세 TODO**: [ui-polish.md](./ui-polish/ui-polish.md)
+
+##### 3-4-1. 반응형 디자인 세부사항
 - [ ] 모바일 반응형 테스트
   - [ ] < 768px: BottomNav, MobileHeader
 - [ ] 태블릿 반응형 테스트
   - [ ] 768px ~ 1024px: Icon-only Sidebar
 - [ ] Desktop 반응형 테스트
   - [ ] 1024px+: Full Sidebar
-- [ ] 에러 핸들링
-  - [ ] API 에러 처리
-  - [ ] 네트워크 에러 처리
-  - [ ] 사용자 친화적 에러 메시지
+- [ ] 메인 피드 최대 너비 630px 중앙 정렬 확인
+- [ ] 배경색 확인 (#FAFAFA 전체, #FFFFFF 카드)
+- [ ] Desktop Sidebar 너비 244px 확인
+- [ ] Tablet Sidebar 너비 72px 확인
+- [ ] Mobile Header 높이 60px 확인
+- [ ] Mobile BottomNav 높이 50px 확인
+- [ ] 프로필 이미지 크기 반응형 (150px Desktop / 90px Mobile)
+
+##### 3-4-2. 타이포그래피 & 컬러 스키마
+- [ ] 폰트 패밀리 확인 (-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto)
+- [ ] 텍스트 크기 확인 (12px, 14px, 16px, 20px)
+- [ ] 폰트 굵기 확인 (400, 600, 700)
+- [ ] Instagram 컬러 스키마 확인 (#0095f6, #fafafa, #ffffff, #dbdbdb, #262626, #8e8e8e, #ed4956)
+
+##### 3-4-3. 애니메이션 & 인터랙션 개선
+- [ ] 모달 열기/닫기 애니메이션 (fade in/out)
+- [ ] 모달 닫기 개선 (ESC 키, 배경 클릭)
+- [ ] Skeleton UI Shimmer 효과 최적화
+- [ ] 버튼 Hover 효과 일관성 확인
+- [ ] 로딩 상태 전환 애니메이션
+
+##### 3-4-4. 에러 핸들링 & UI 개선
+- [ ] API 에러 처리
+- [ ] 네트워크 에러 처리
+- [ ] 사용자 친화적 에러 메시지
 - [ ] Skeleton UI 적용
   - [ ] 모든 로딩 상태에 Skeleton 적용
+
+##### 3-4-5. 접근성
+- [ ] 키보드 네비게이션 (Tab, Enter, ESC)
+- [ ] ARIA 라벨 추가
+- [ ] 포커스 표시 개선
+
+##### 3-4-6. 배포 준비
 - [ ] Vercel 배포
   - [ ] 환경 변수 설정
   - [ ] Supabase 프로덕션 연결
